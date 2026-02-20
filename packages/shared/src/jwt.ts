@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 import { ROLES, type Role, hasMinimumRole } from './roles';
 
@@ -13,7 +13,8 @@ export interface JwtPayload {
 }
 
 export function signToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
+  return jwt.sign(payload, JWT_SECRET, { expiresIn } as SignOptions);
 }
 
 export function verifyToken(token: string): JwtPayload {
