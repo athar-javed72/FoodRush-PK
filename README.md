@@ -1,7 +1,7 @@
-🍕 Foodie - Responsive Landing Page
+🍕 FoodRush PK – Food Delivery
 
-A modern and responsive landing page for a **Food Delivery Service**.  
-This project is part of my **portfolio showcase** to demonstrate frontend development skills using **HTML, Tailwind CSS, and JavaScript**.
+A modern and responsive landing page for **FoodRush PK** – food delivery across Pakistan.  
+Built with **HTML, Tailwind CSS, and JavaScript**, plus a **Next.js + MERN** app in this repo.
 
 ---
 
