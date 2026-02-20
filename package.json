@@ -1,0 +1,27 @@
+{
+  "name": "foodie-landing-page",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Food delivery platform - MERN monorepo",
+  "workspaces": [
+    "client",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:services\"",
+    "dev:client": "npm run dev -w client",
+    "dev:services": "concurrently -n auth,user,restaurant,order,payment,delivery,admin,notification \"npm run dev -w services-auth\" \"npm run dev -w services-user\" \"npm run dev -w services-restaurant\" \"npm run dev -w services-order\" \"npm run dev -w services-payment\" \"npm run dev -w services-delivery\" \"npm run dev -w services-admin\" \"npm run dev -w services-notification\"",
+    "build": "npm run build -w client && npm run build -w packages/shared",
+    "build:services": "npm run build -w @foodie/shared && npm run build -w services-auth && npm run build -w services-user && npm run build -w services-restaurant && npm run build -w services-order && npm run build -w services-payment && npm run build -w services-delivery && npm run build -w services-admin && npm run build -w services-notification",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
