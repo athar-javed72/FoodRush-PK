@@ -1,180 +1,194 @@
-🍕 FoodRush PK – Food Delivery
+# FoodRush
 
-A modern and responsive landing page for **FoodRush PK** – food delivery across Pakistan.  
-Built with **HTML, Tailwind CSS, and JavaScript**, plus a **Next.js + MERN** app in this repo.
-
----
-
-🚀 Live Demo
-[Click here to view the live site](https://github.com/athar-javed72/FoodRush/)
-
-
-✨ Features
-* 📱 Fully responsive design (mobile, tablet, desktop)  
-* 🎨 Built with Tailwind CSS for modern UI  
-* 🧭 Sticky navbar with smooth scrolling  
-* 🍔 Mobile menu with toggle button  
-* 💳 Pricing plans section  
-* 📬 Contact form with details  
-
-
-🛠️ Tech Stack
-* **HTML5**  
-* **Tailwind CSS (CDN)**  
-* **JavaScript (Vanilla)**  
+**FoodRush** is a full-stack food ordering web app: customers browse the menu, cart, checkout, and track orders; admins manage categories, products, orders, coupons, and analytics.  
+Main stack: **Next.js (frontend)** + **Node.js / Express / MongoDB (backend)** — REST API under `/api/v1`.
 
 ---
 
-## Phase 1 – MERN Monorepo & Microservices
+## Features
 
-Base backend + frontend with microservices architecture.
+| Area | What’s included |
+|------|-------------------|
+| **Public** | Home, menu, product details, login, register |
+| **Customer** | Profile, addresses, cart, checkout, orders, order tracking |
+| **Admin** | Dashboard, categories, products, orders, users, coupons, analytics |
+| **Backend** | JWT auth, bcrypt, Mongoose models, validation, consistent JSON responses |
 
-### Structure
+---
+
+## Tech stack
+
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js, React, Tailwind CSS, Redux Toolkit, Axios |
+| Backend | Node.js, Express.js, MongoDB, Mongoose |
+| Auth | JWT + bcrypt |
+| API | REST, versioned base path `http://localhost:5000/api/v1` |
+
+---
+
+## Repository layout
 
 ```
-/client                 # Next.js 14 + Tailwind + ShadCN
-/packages/shared        # MySQL, Redis, JWT, RBAC
-/services/auth          # Auth (login, JWT)
-/services/user          # User profile
-/services/restaurant    # Restaurants
-/services/order         # Orders
-/services/payment       # Payments
-/services/delivery      # Delivery assignments
-/services/admin         # Admin stats (admin role)
-/services/notification  # Notifications
+FoodRush/
+├── client/                 # Next.js app (UI) — http://localhost:3000
+├── server/                 # Express + MongoDB API — http://localhost:5000
+├── packages/shared/        # Shared lib (legacy microservices)
+├── services/               # Optional microservices (MySQL/Redis stack)
+├── docker-compose.yml      # MySQL + Redis for services/*
+└── README.md
 ```
 
-### Setup
-
-1. **Copy env and install**
-   ```bash
-   cp .env.example .env
-   npm install
-   ```
-   *(Windows PowerShell: `Copy-Item .env.example .env`)*
-
-2. **MySQL & Redis (local or Docker)** – see [MySQL & Run Guide](#mysql--project-run-guide) below.
-
-3. **Run frontend**
-   ```bash
-   npm run dev:client
-   ```
-   → http://localhost:3000
-
-4. **Run all services**
-   ```bash
-   npm run dev:services
-   ```
-   Ports: auth 4001, user 4002, restaurant 4003, order 4004, payment 4005, delivery 4006, admin 4007, notification 4008.
-
-5. **Run everything (client + services)**
-   ```bash
-   npm run dev
-   ```
+**Day-to-day development** for the FoodRush MERN app uses **`client/`** + **`server/`** only.  
+The **`services/*`** folder is an older microservices setup (MySQL + Redis); see [Optional: microservices](#optional-microservices) if you use it.
 
 ---
 
-## MySQL & Project Run Guide
+## Prerequisites
 
-**Backend ke liye MySQL zaroori hai?**  
-Backend (auth, user, order, etc.) chalane ke liye **haan** – MySQL (aur Redis) chahiye. Sirf **frontend** (website UI) dekhna ho to MySQL ki zaroorat nahi.
+- **Node.js 18 or 20 LTS** (64-bit). Avoid Node 22+ for Next.js if you hit SWC errors.
+- **MongoDB** running locally (or connection string to Atlas).
+- **npm** (comes with Node).
 
-### Option A – Sirf website chalana (bina MySQL)
+---
 
-- MySQL install **nahi** karni.
-- Sirf ye commands run karo (project root par):
+## Quick start (FoodRush app — recommended)
+
+### 1. Clone & install
 
 ```bash
+git clone <your-repo-url> FoodRush
+cd FoodRush
+```
+
+**Backend (server):**
+
+```bash
+cd server
 npm install
-npm run dev:client
 ```
 
-- Browser mein open karo: **http://localhost:3000**  
-- Ye sirf Next.js frontend hai; backend APIs (login, orders, etc.) bina MySQL ke kaam nahi karenge.
+Copy env (Windows PowerShell):
 
----
-
-### Option B – Full stack chalana (MySQL + Redis use karna)
-
-Backend services ko chalane ke liye **MySQL** aur **Redis** dono chahiye. Teen tareeqe hain:
-
-#### 1) Docker se (sabse aasaan – recommend)
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) install karo (Windows/Mac).
-- Project folder mein ye run karo:
-
-```bash
-docker-compose up -d mysql redis
+```powershell
+Copy-Item .env.example .env
 ```
 
-- Ye MySQL ko `localhost:3306` par aur Redis ko `localhost:6379` par start karega.
-- Phir backend + frontend dono chalao:
+Edit **`server/.env`**:
 
-```bash
-npm install
-npm run dev
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017/foodrush
+PORT=5000
+JWT_SECRET=your-long-random-secret
+JWT_EXPIRES_IN=7d
 ```
 
-- Frontend: http://localhost:3000  
-- Backend ports: 4001 (auth), 4002 (user), 4003 (restaurant), … 4008 (notification).
-
-**MySQL use kaise ho raha hai:**  
-Sab services `DATABASE_URL=mysql://root:password@localhost:3306/foodie` use karti hain (`.env` mein set hai). Data `foodie` database mein save hota hai.
-
----
-
-#### 2) MySQL local install karke
-
-- [MySQL](https://dev.mysql.com/downloads/installer/) (Windows) ya XAMPP/WAMP se MySQL install karo; Mac/Linux par `mysql-server` ya Homebrew use karo.
-- MySQL service start karo (Windows: Services se “MongoDB” start karo; Mac/Linux: `mysql.server start` ya `sudo service mysql start`).
-- [Redis](https://redis.io/download) bhi install karo aur run karo (`redis-server`).
-- `.env` mein ye rakhna hai (default):
-
-```
-DATABASE_URL=mysql://root:password@localhost:3306/foodie
-REDIS_URL=redis://localhost:6379
-```
-
-- Phir:
+Start MongoDB, then:
 
 ```bash
 npm run dev
 ```
 
-**MySQL ko use/check kaise karein:**  
-MySQL Workbench, DBeaver, ya command line: `mysql -u root -p` → `USE foodie;` → `SHOW TABLES;`
+You should see: `FoodRush backend listening on port 5000`.
 
----
-
-#### 3) MySQL cloud (bina local install)
-
-- **[Full step-by-step guide: docs/MYSQL-SETUP.md](docs/MYSQL-SETUP.md)** – local + Docker + optional cloud options.
-- Agar cloud MySQL use karna ho (e.g. PlanetScale, Railway, AWS RDS) to unka connection string `.env` mein `DATABASE_URL` set karo.
-- **Redis:** Redis bhi chahiye – Docker: `docker run -d -p 6379:6379 --name redis redis:7-alpine` ya [Upstash](https://upstash.com) (cloud).
-- Phir `npm run dev` se sab run karo.
-
----
-
-### Short summary
-
-| Kya chalaana hai      | MySQL chahiye? | Command              |
-|-----------------------|----------------|----------------------|
-| Sirf website (UI)     | Nahi          | `npm run dev:client` |
-| Full stack (backend + UI) | Haan (Docker / local / cloud) | Pehle MySQL+Redis, phir `npm run dev` |
-
-### Docker (full stack)
+**Frontend (client):**
 
 ```bash
-docker-compose up -d
+cd ../client
+npm install
 ```
 
-### CI/CD
+Create **`client/.env.local`**:
 
-GitHub Actions workflow in `.github/workflows/ci.yml`: on push/PR to `main` or `develop` it installs deps, builds `@foodie/shared`, builds client, and builds all services.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+```
 
-### Roles (RBAC)
+```bash
+npm run dev
+```
 
-- `user` – default
-- `restaurant_owner` – restaurant management
-- `delivery` – delivery driver
-- `admin` – admin-only routes (e.g. `/admin/stats`)
+Open **http://localhost:3000** — e.g. **http://localhost:3000/menu**.
+
+### 2. First admin user
+
+Register a user via **`POST /api/v1/auth/register`**, then in MongoDB set that user’s `role` to `admin`, or seed an admin in Compass / a small script.
+
+---
+
+## Useful URLs
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:3000 | Next.js app |
+| http://localhost:3000/menu | Menu |
+| http://localhost:5000/health | API health |
+| http://localhost:5000/api/v1/... | REST API |
+
+---
+
+## API overview (server)
+
+Base: **`/api/v1`**
+
+| Group | Examples |
+|-------|----------|
+| Auth | `POST /auth/register`, `POST /auth/login` |
+| Users | `GET/PUT /users/me` |
+| Addresses | `GET/POST/PUT/DELETE /addresses` |
+| Categories | `GET /categories` (public), admin CRUD with JWT + admin role |
+| Products | `GET /products`, `GET /products/:id` |
+| Cart | `GET/POST /cart`, coupon apply, `POST /cart/checkout/prepare` |
+| Orders | `POST /orders`, `GET /orders/my-orders`, admin status updates |
+| Reviews | `POST /reviews`, `GET /reviews/product/:productId` |
+| Admin | `GET /admin/dashboard`, analytics routes |
+
+---
+
+## Scripts (root `package.json`)
+
+| Command | What it does |
+|---------|----------------|
+| `npm run dev:client` | Next.js only |
+| `npm run dev:services` | All `services/*` (needs MySQL + Redis) |
+| `npm run dev` | Client + all microservices (heavy) |
+
+For the **MERN FoodRush** flow, run **`server`** and **`client`** in two terminals (see Quick start).
+
+---
+
+## Optional: microservices
+
+The repo still includes **`packages/shared`** and **`services/*`** (auth, user, order, …) using **MySQL** and **Redis**. That path is separate from the **`server/`** MongoDB API.
+
+- Env: copy root **`.env.example`** → **`.env`** (`DATABASE_URL`, `REDIS_URL`).
+- Docs: **[docs/MYSQL-SETUP.md](docs/MYSQL-SETUP.md)**.
+- Docker: `docker-compose up -d mysql redis` then `npm run dev:services`.
+
+---
+
+## Troubleshooting
+
+| Issue | What to try |
+|-------|-------------|
+| **Failed to load SWC binary** (Next) | Use **Node 20 LTS**, delete `node_modules`, reinstall; see [Next.js SWC docs](https://nextjs.org/docs/messages/failed-loading-swc). |
+| API errors in browser | Ensure **`server`** is running and **`NEXT_PUBLIC_API_URL`** matches (`http://localhost:5000/api/v1`). |
+| MongoDB connection failed | Check **`MONGODB_URI`** and that MongoDB is running. |
+
+---
+
+## Live demo / repo
+
+Update the link below to your deployed site or GitHub repo when ready.
+
+- **Repository:** [FoodRush on GitHub](https://github.com/athar-javed72/FoodRush) *(replace if different)*
+
+---
+
+## License
+
+Private / MIT — match your team’s choice.
+
+---
+
+*FoodRush — modern food ordering with a clean MERN stack.*
