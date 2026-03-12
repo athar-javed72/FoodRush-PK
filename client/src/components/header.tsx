@@ -1,6 +1,7 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-"use client";
 
 import { useAppSelector } from '@/app/store';
 import { logout } from '@/features/auth/authSlice';
