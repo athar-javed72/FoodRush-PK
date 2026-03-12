@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/EmptyState';
+import { FadeIn } from '@/components/animation/FadeIn';
 
 interface Category {
   _id: string;
@@ -52,14 +53,14 @@ export default function MenuPage() {
     <>
       <Header />
       <main className="container py-6">
-        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <FadeIn className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Menu</h1>
             <p className="text-sm text-muted-foreground">
               Browse categories and choose your favourite items.
             </p>
           </div>
-        </div>
+        </FadeIn>
 
         {loading && (
           <div className="grid gap-6 md:grid-cols-[220px,1fr]">
@@ -87,7 +88,7 @@ export default function MenuPage() {
 
         {!loading && !error && (
           <div className="grid gap-6 md:grid-cols-[220px,1fr]">
-            <aside className="space-y-2">
+            <FadeIn delay={0.02} className="space-y-2">
               <h2 className="text-sm font-semibold uppercase text-muted-foreground">Categories</h2>
               <ul className="space-y-1 text-sm">
                 {categories.map((cat) => (
@@ -96,7 +97,7 @@ export default function MenuPage() {
                   </li>
                 ))}
               </ul>
-            </aside>
+            </FadeIn>
             <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
               {products.length === 0 && (
                 <EmptyState
@@ -104,27 +105,29 @@ export default function MenuPage() {
                   message="As soon as the restaurant adds products, they will appear here."
                 />
               )}
-              {products.map((p) => (
-                <Card key={p._id} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between text-sm">
-                      <span>{p.name}</span>
-                      {p.category && (
-                        <Badge variant="outline" className="text-[10px]">
-                          {p.category.name}
-                        </Badge>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col justify-between gap-3">
-                    <p className="text-sm font-semibold">Rs. {p.price}</p>
-                    <Link href={`/products/${p._id}`} className="w-full">
-                      <Button variant="outline" className="w-full text-xs">
-                        View details
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+              {products.map((p, index) => (
+                <FadeIn key={p._id} delay={0.02 + index * 0.015}>
+                  <Card className="flex flex-col transition-transform duration-150 hover:-translate-y-1">
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between text-sm">
+                        <span>{p.name}</span>
+                        {p.category && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {p.category.name}
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-1 flex-col justify-between gap-3">
+                      <p className="text-sm font-semibold">Rs. {p.price}</p>
+                      <Link href={`/products/${p._id}`} className="w-full">
+                        <Button variant="outline" className="w-full text-xs">
+                          View details
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </FadeIn>
               ))}
             </section>
           </div>

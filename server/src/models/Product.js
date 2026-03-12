@@ -61,7 +61,6 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-productSchema.index({ slug: 1 }, { unique: true });
 productSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
 export const Product = mongoose.model('Product', productSchema);

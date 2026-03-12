@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/ui/loader';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
@@ -48,36 +49,43 @@ export default function CartPage() {
         {!loading && !isEmpty && (
           <div className="grid gap-6 md:grid-cols-[2fr,1fr]">
             <section className="space-y-3">
-              {items.map((item) => (
-                <article
-                  key={item._id}
-                  className="flex items-center justify-between rounded-md border bg-card p-3 text-sm"
-                >
-                  <div>
-                    <p className="font-medium">{item.product.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Rs. {item.priceSnapshot} x {item.quantity}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={1}
-                      className="h-8 w-16 px-2 py-1 text-xs"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(item._id, Number(e.target.value))}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => handleRemove(item._id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </article>
-              ))}
+              <AnimatePresence initial={false}>
+                {items.map((item) => (
+                  <motion.article
+                    key={item._id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    layout
+                    className="flex items-center justify-between rounded-md border bg-card p-3 text-sm"
+                  >
+                    <div>
+                      <p className="font-medium">{item.product.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Rs. {item.priceSnapshot} x {item.quantity}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        className="h-8 w-16 px-2 py-1 text-xs"
+                        value={item.quantity}
+                        onChange={(e) => handleQuantityChange(item._id, Number(e.target.value))}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => handleRemove(item._id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </motion.article>
+                ))}
+              </AnimatePresence>
             </section>
             <aside className="space-y-2 rounded-md border bg-card p-4 text-sm">
               <h2 className="mb-2 text-base font-semibold">Summary</h2>

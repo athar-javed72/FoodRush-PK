@@ -37,7 +37,5 @@ const couponSchema = new mongoose.Schema(
   }
 );
 
-couponSchema.index({ code: 1 }, { unique: true });
-
 export const Coupon = mongoose.model('Coupon', couponSchema);
 

@@ -6,7 +6,7 @@ Built with **HTML, Tailwind CSS, and JavaScript**, plus a **Next.js + MERN** app
 ---
 
 🚀 Live Demo
-[Click here to view the live site](https://github.com/athar-javed72/foodie-landing-page/)
+[Click here to view the live site](https://github.com/athar-javed72/FoodRush/)
 
 
 ✨ Features

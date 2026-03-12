@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { FadeIn } from '@/components/animation/FadeIn';
 
 export default function Home() {
   return (
@@ -10,7 +11,7 @@ export default function Home() {
       <Header />
       <main className="flex flex-1 flex-col bg-gradient-to-b from-background to-muted/40">
         <section className="container flex flex-1 flex-col items-center justify-center gap-10 py-10 md:grid md:grid-cols-2 md:items-center">
-          <div className="space-y-5 text-center md:text-left">
+          <FadeIn className="space-y-5 text-center md:text-left">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               Fast, fresh, and right on time
             </p>
@@ -31,9 +32,9 @@ export default function Home() {
                 </Button>
               </Link>
             </div>
-          </div>
-          <div className="flex justify-center">
-            <Card className="w-full max-w-md border-none bg-card/80 shadow-lg backdrop-blur">
+          </FadeIn>
+          <FadeIn delay={0.05} className="flex justify-center">
+            <Card className="w-full max-w-md border-none bg-card/80 shadow-lg backdrop-blur transition-transform duration-200 hover:-translate-y-1">
               <CardContent className="flex flex-col items-center gap-4 py-8">
                 <Image
                   src="/foodrush-pk-logo.svg"
@@ -49,7 +50,7 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-          </div>
+          </FadeIn>
         </section>
       </main>
     </>
