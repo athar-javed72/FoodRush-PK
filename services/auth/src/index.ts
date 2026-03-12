@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { connectMongo, getRedis, authMiddleware, signToken, ROLES } from '@foodie/shared';
+import { connectDB, getRedis, authMiddleware, signToken, ROLES } from '@foodie/shared';
 
 const PORT = process.env.PORT || 4001;
 const app = express();
@@ -32,7 +32,7 @@ app.get('/auth/me', authMiddleware(), (req: any, res) => {
 });
 
 async function main() {
-  await connectMongo();
+  await connectDB();
   getRedis(); // ensure Redis client exists
   app.listen(PORT, () => console.log(`[auth] listening on ${PORT}`));
 }

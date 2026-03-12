@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { connectMongo, getRedis, authMiddleware } from '@foodie/shared';
+import { connectDB, getRedis, authMiddleware } from '@foodie/shared';
 
 const PORT = process.env.PORT || 4008;
 const app = express();
@@ -12,7 +12,7 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'notificatio
 app.get('/notification/list', authMiddleware(), (req: any, res) => res.json({ notifications: [], userId: req.user?.userId }));
 
 async function main() {
-  await connectMongo();
+  await connectDB();
   getRedis();
   app.listen(PORT, () => console.log(`[notification] listening on ${PORT}`));
 }

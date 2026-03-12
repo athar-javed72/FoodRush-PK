@@ -1,12 +1,24 @@
-import mongoose from 'mongoose';
+import mysql from 'mysql2/promise';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/foodie';
+const DATABASE_URL =
+  process.env.DATABASE_URL || 'mysql://root:password@localhost:3306/foodie';
 
-export async function connectMongo(): Promise<typeof mongoose> {
-  if (mongoose.connection.readyState === 1) return mongoose;
-  return mongoose.connect(MONGODB_URI);
+let pool: mysql.Pool | null = null;
+
+export async function connectDB(): Promise<mysql.Pool> {
+  if (pool) return pool;
+  pool = mysql.createPool(DATABASE_URL);
+  await pool.getConnection();
+  return pool;
 }
 
-export async function disconnectMongo(): Promise<void> {
-  await mongoose.disconnect();
+export async function disconnectDB(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
+  }
+}
+
+export function getPool(): mysql.Pool | null {
+  return pool;
 }
