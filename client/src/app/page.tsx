@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 
@@ -16,8 +17,17 @@ export default function Home() {
           priority
         />
         <h1 className="sr-only">FoodRush PK</h1>
-        <p className="mb-6 text-muted-foreground">Food delivery across Pakistan – Fast & fresh</p>
-        <Button>Get started</Button>
+        <p className="mb-6 text-muted-foreground text-center max-w-md">
+          Order your favourite fast food from a modern, easy-to-use FoodRush experience.
+        </p>
+        <div className="flex gap-3">
+          <Link href="/menu">
+            <Button>Browse Menu</Button>
+          </Link>
+          <Link href="/login">
+            <Button variant="outline">Sign in</Button>
+          </Link>
+        </div>
       </main>
     </>
   );

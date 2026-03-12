@@ -1,0 +1,105 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Header } from '@/components/header';
+import { apiClient } from '@/api/client';
+import { Button } from '@/components/ui/button';
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  image?: string;
+  category?: Category;
+}
+
+export default function MenuPage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const [catRes, prodRes] = await Promise.all([
+          apiClient.get('/categories'),
+          apiClient.get('/products')
+        ]);
+        setCategories(catRes.data.data.categories || []);
+        setProducts(prodRes.data.data.items || []);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load menu');
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  return (
+    <>
+      <Header />
+      <main className="container py-6">
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Menu</h1>
+            <p className="text-sm text-muted-foreground">
+              Browse categories and choose your favourite items.
+            </p>
+          </div>
+        </div>
+
+        {loading && <p>Loading menu...</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        {!loading && !error && (
+          <div className="grid gap-6 md:grid-cols-[220px,1fr]">
+            <aside className="space-y-2">
+              <h2 className="text-sm font-semibold uppercase text-muted-foreground">Categories</h2>
+              <ul className="space-y-1 text-sm">
+                {categories.map((cat) => (
+                  <li key={cat._id}>{cat.name}</li>
+                ))}
+              </ul>
+            </aside>
+            <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {products.length === 0 && (
+                <p className="text-sm text-muted-foreground">No products available yet.</p>
+              )}
+              {products.map((p) => (
+                <article
+                  key={p._id}
+                  className="flex flex-col rounded-lg border bg-card p-3 shadow-sm"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-medium">{p.name}</h3>
+                    {p.category && (
+                      <p className="text-xs text-muted-foreground">{p.category.name}</p>
+                    )}
+                    <p className="mt-2 text-sm font-semibold">Rs. {p.price}</p>
+                  </div>
+                  <div className="mt-3 flex justify-between gap-2">
+                    <Link href={`/products/${p._id}`} className="flex-1">
+                      <Button variant="outline" className="w-full text-xs">
+                        View
+                      </Button>
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </section>
+          </div>
+        )}
+      </main>
+    </>
+  );
+}
+
