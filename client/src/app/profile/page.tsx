@@ -4,6 +4,10 @@ import { useEffect, useState, FormEvent } from 'react';
 import { Header } from '@/components/header';
 import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Loader } from '@/components/ui/loader';
+import Link from 'next/link';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any | null>(null);
@@ -50,35 +54,58 @@ export default function ProfilePage() {
       <Header />
       <main className="container py-6">
         <h1 className="mb-4 text-2xl font-semibold">Profile</h1>
-        {loading && <p>Loading profile...</p>}
+        {loading && (
+          <Loader className="my-4" />
+        )}
         {!loading && profile && (
-          <form onSubmit={handleSubmit} className="max-w-md space-y-4 rounded-md border bg-card p-4">
-            {message && <p className="text-sm text-muted-foreground">{message}</p>}
-            <div className="space-y-1 text-sm">
-              <label className="font-medium">Name</label>
-              <input
-                type="text"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1 text-sm">
-              <label className="font-medium">Phone</label>
-              <input
-                type="text"
-                className="w-full rounded-md border px-3 py-2 text-sm"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <Button type="submit" disabled={saving}>
-              {saving ? 'Saving...' : 'Save changes'}
-            </Button>
-          </form>
+          <Card className="max-w-md">
+            <CardHeader>
+              <CardTitle>Account details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+                {message && <p className="text-xs text-muted-foreground">{message}</p>}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Name</label>
+                  <Input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your full name"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Phone</label>
+                  <Input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="03xx-xxxxxxx"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Email</label>
+                  <Input type="email" value={profile.email} disabled />
+                </div>
+                <Button type="submit" disabled={saving}>
+                  {saving ? 'Saving...' : 'Save changes'}
+                </Button>
+                <div className="pt-2 text-xs text-muted-foreground">
+                  <p>
+                    Need to update your delivery locations?{' '}
+                    <Link href="/addresses" className="text-primary underline underline-offset-2">
+                      Manage addresses
+                    </Link>
+                    .
+                  </p>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         )}
       </main>
     </>
   );
 }
+
 

@@ -6,6 +6,10 @@ import { Header } from '@/components/header';
 import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
 
 interface Address {
   _id: string;
@@ -23,6 +27,7 @@ export default function CheckoutPage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [couponCode, setCouponCode] = useState('');
   const [summary, setSummary] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'cod'>('cod');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -76,7 +81,7 @@ export default function CheckoutPage() {
       setError(null);
       const res = await apiClient.post('/orders', {
         addressId: selectedAddressId,
-        paymentMethod: 'cod'
+        paymentMethod
       });
       setSuccess('Order placed successfully!');
       router.replace(`/orders/${res.data.data.order._id}`);
@@ -92,86 +97,165 @@ export default function CheckoutPage() {
       <Header />
       <main className="container py-6">
         <h1 className="mb-4 text-2xl font-semibold">Checkout</h1>
+        {loading && !summary && (
+          <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner className="h-4 w-4" />
+            <span>Preparing your checkout…</span>
+          </div>
+        )}
         {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
         {success && <p className="mb-2 text-sm text-emerald-600">{success}</p>}
 
         <form onSubmit={handlePrepareCheckout} className="grid gap-6 md:grid-cols-[2fr,1fr]">
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase text-muted-foreground">
-              Delivery address
-            </h2>
-            {addresses.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                You have no saved addresses. Add one in your profile.
-              </p>
-            )}
-            <div className="space-y-2">
-              {addresses.map((addr) => (
-                <label
-                  key={addr._id}
-                  className="flex cursor-pointer items-center gap-3 rounded-md border bg-card p-3 text-sm"
-                >
-                  <input
-                    type="radio"
-                    name="address"
-                    value={addr._id}
-                    checked={selectedAddressId === addr._id}
-                    onChange={() => setSelectedAddressId(addr._id)}
-                  />
-                  <div>
-                    <p className="font-medium">
-                      {addr.fullName} {addr.label && <span>({addr.label})</span>}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {addr.streetAddress}, {addr.area}, {addr.city}
-                    </p>
-                  </div>
-                </label>
-              ))}
-            </div>
+          <section className="space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-sm">
+                  <span>Step 1 · Delivery address</span>
+                  <Badge variant="outline" className="text-[10px]">
+                    Required
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                {addresses.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    You have no saved addresses. Add one in your profile, then return to checkout.
+                  </p>
+                )}
+                <div className="space-y-2">
+                  {addresses.map((addr) => (
+                    <label
+                      key={addr._id}
+                      className="flex cursor-pointer items-center gap-3 rounded-md border bg-card px-3 py-2 text-xs transition-colors hover:border-primary/60"
+                    >
+                      <input
+                        type="radio"
+                        name="address"
+                        value={addr._id}
+                        checked={selectedAddressId === addr._id}
+                        onChange={() => setSelectedAddressId(addr._id)}
+                        className="h-4 w-4 accent-primary"
+                      />
+                      <div>
+                        <p className="font-medium">
+                          {addr.fullName} {addr.label && <span>({addr.label})</span>}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {addr.streetAddress}, {addr.area}, {addr.city}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="mt-4 space-y-2">
-              <h2 className="text-sm font-semibold uppercase text-muted-foreground">Coupon</h2>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                  placeholder="Enter coupon code"
-                  className="flex-1 rounded-md border px-3 py-2 text-sm"
-                />
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Checking...' : 'Apply & Review'}
-                </Button>
-              </div>
-            </div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Step 2 · Coupon & payment</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Coupon</p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code (optional)"
+                    />
+                    <Button type="submit" disabled={loading} className="sm:w-40">
+                      {loading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Spinner className="h-4 w-4" />
+                          Checking…
+                        </span>
+                      ) : (
+                        'Apply & review'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Payment method</p>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <label className="flex flex-1 cursor-pointer items-center justify-between rounded-md border bg-card px-3 py-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value="cod"
+                          checked={paymentMethod === 'cod'}
+                          onChange={() => setPaymentMethod('cod')}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <div>
+                          <p className="font-medium">Cash on delivery</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Pay in cash when your food arrives.
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">
+                        Recommended
+                      </Badge>
+                    </label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </section>
 
-          <aside className="space-y-2 rounded-md border bg-card p-4 text-sm">
-            <h2 className="mb-2 text-base font-semibold">Summary</h2>
-            {summary ? (
-              <>
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>Rs. {summary.cart.subtotal}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Discount</span>
-                  <span>- Rs. {summary.cart.discountAmount}</span>
-                </div>
-                <div className="mt-2 flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span>Rs. {summary.cart.totalAmount}</span>
-                </div>
-                <Button className="mt-4 w-full" type="button" onClick={handlePlaceOrder}>
-                  {loading ? 'Placing order...' : 'Place order (COD)'}
-                </Button>
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Select an address and apply coupon (optional) to see final summary.
-              </p>
-            )}
+          <aside>
+            <Card className="text-sm">
+              <CardHeader>
+                <CardTitle className="text-base">Step 3 · Order summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {summary ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>Rs. {summary.cart.subtotal}</span>
+                    </div>
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Discount</span>
+                      <span>- Rs. {summary.cart.discountAmount}</span>
+                    </div>
+                    <div className="mt-1 flex justify-between font-semibold">
+                      <span>Total</span>
+                      <span>Rs. {summary.cart.totalAmount}</span>
+                    </div>
+                    <Button
+                      className="mt-4 w-full"
+                      type="button"
+                      onClick={handlePlaceOrder}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <Spinner className="h-4 w-4" />
+                          Placing order…
+                        </span>
+                      ) : (
+                        'Place order (Cash on delivery)'
+                      )}
+                    </Button>
+                    <p className="mt-2 text-[11px] text-muted-foreground">
+                      By placing this order, you confirm your details and agree to pay in cash on
+                      delivery. You can track your order status on the next screen.
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Select an address and optionally apply a coupon to see your final total before
+                    placing the order.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </aside>
         </form>
       </main>

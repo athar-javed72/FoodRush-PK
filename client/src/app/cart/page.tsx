@@ -6,6 +6,9 @@ import { Header } from '@/components/header';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { fetchCart, updateCartItem, removeCartItem } from '@/features/cart/cartSlice';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/EmptyState';
+import { Loader } from '@/components/ui/loader';
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
@@ -32,16 +35,15 @@ export default function CartPage() {
       <Header />
       <main className="container py-6">
         <h1 className="mb-4 text-2xl font-semibold">Your cart</h1>
-        {loading && <p>Loading cart...</p>}
+        {loading && <Loader className="my-6" />}
         {error && <p className="text-sm text-red-500">{error}</p>}
         {!loading && isEmpty && (
-          <p className="text-sm text-muted-foreground">
-            Your cart is empty.{' '}
-            <Link href="/menu" className="text-primary underline">
-              Browse the menu
-            </Link>
-            .
-          </p>
+          <EmptyState
+            title="Your cart is empty"
+            message="Add a few delicious items from the menu to get started."
+            actionLabel="Browse the menu"
+            actionHref="/menu"
+          />
         )}
         {!loading && !isEmpty && (
           <div className="grid gap-6 md:grid-cols-[2fr,1fr]">
@@ -58,10 +60,10 @@ export default function CartPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
+                    <Input
                       type="number"
                       min={1}
-                      className="w-16 rounded-md border px-2 py-1 text-xs"
+                      className="h-8 w-16 px-2 py-1 text-xs"
                       value={item.quantity}
                       onChange={(e) => handleQuantityChange(item._id, Number(e.target.value))}
                     />

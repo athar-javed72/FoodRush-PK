@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/header';
 import { apiClient } from '@/api/client';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/EmptyState';
+import { Loader } from '@/components/ui/loader';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -30,10 +33,15 @@ export default function OrdersPage() {
       <Header />
       <main className="container py-6">
         <h1 className="mb-4 text-2xl font-semibold">Your orders</h1>
-        {loading && <p>Loading orders...</p>}
+        {loading && <Loader className="my-6" />}
         {error && <p className="text-sm text-red-500">{error}</p>}
         {!loading && !orders.length && (
-          <p className="text-sm text-muted-foreground">You have not placed any orders yet.</p>
+          <EmptyState
+            title="No orders yet"
+            message="Once you place an order, you’ll see its history and status here."
+            actionLabel="Browse the menu"
+            actionHref="/menu"
+          />
         )}
         {!loading && orders.length > 0 && (
           <div className="space-y-3 text-sm">
@@ -44,13 +52,18 @@ export default function OrdersPage() {
               >
                 <div>
                   <p className="font-medium">
-                    Order #{order._id.slice(-6)} • {order.orderStatus}
+                    Order #{order._id.slice(-6)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {new Date(order.createdAt).toLocaleString()} • {order.items.length} items
                   </p>
                 </div>
                 <div className="text-right">
+                  <div className="mb-1 flex justify-end">
+                    <Badge variant="outline" className="text-[10px]">
+                      {order.orderStatus}
+                    </Badge>
+                  </div>
                   <p className="text-sm font-semibold">Rs. {order.totalAmount}</p>
                   <Link
                     href={`/orders/${order._id}`}

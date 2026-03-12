@@ -6,6 +6,9 @@ import { useAppDispatch, useAppSelector } from '@/app/store';
 import { register, setAuthFromStorage } from '@/features/auth/authSlice';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function RegisterPage() {
   const dispatch = useAppDispatch();
@@ -39,46 +42,56 @@ export default function RegisterPage() {
     <>
       <Header />
       <main className="flex flex-1 items-center justify-center p-4">
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-md space-y-4 rounded-lg border bg-card p-6 shadow-sm"
-        >
-          <h1 className="text-xl font-semibold">Create your FoodRush account</h1>
-          {error && <p className="text-sm text-red-500">{error}</p>}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Name</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Register'}
-          </Button>
-        </form>
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Create your FoodRush account</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Name</label>
+                <Input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter your name"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Password</label>
+                <Input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password"
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Spinner className="h-4 w-4" />
+                    Creating account...
+                  </span>
+                ) : (
+                  'Register'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </main>
     </>
   );

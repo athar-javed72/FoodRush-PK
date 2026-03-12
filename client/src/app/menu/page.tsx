@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { Header } from '@/components/header';
 import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/EmptyState';
 
 interface Category {
   _id: string;
@@ -57,8 +61,29 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {loading && <p>Loading menu...</p>}
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {loading && (
+          <div className="grid gap-6 md:grid-cols-[220px,1fr]">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          </div>
+        )}
+        {error && (
+          <div className="mt-4">
+            <EmptyState
+              title="We couldn't load the menu"
+              message={error}
+              actionLabel="Try again"
+              actionHref="/menu"
+            />
+          </div>
+        )}
 
         {!loading && !error && (
           <div className="grid gap-6 md:grid-cols-[220px,1fr]">
@@ -66,34 +91,40 @@ export default function MenuPage() {
               <h2 className="text-sm font-semibold uppercase text-muted-foreground">Categories</h2>
               <ul className="space-y-1 text-sm">
                 {categories.map((cat) => (
-                  <li key={cat._id}>{cat.name}</li>
+                  <li key={cat._id}>
+                    <Badge variant="outline">{cat.name}</Badge>
+                  </li>
                 ))}
               </ul>
             </aside>
             <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
               {products.length === 0 && (
-                <p className="text-sm text-muted-foreground">No products available yet.</p>
+                <EmptyState
+                  title="No products yet"
+                  message="As soon as the restaurant adds products, they will appear here."
+                />
               )}
               {products.map((p) => (
-                <article
-                  key={p._id}
-                  className="flex flex-col rounded-lg border bg-card p-3 shadow-sm"
-                >
-                  <div className="flex-1">
-                    <h3 className="font-medium">{p.name}</h3>
-                    {p.category && (
-                      <p className="text-xs text-muted-foreground">{p.category.name}</p>
-                    )}
-                    <p className="mt-2 text-sm font-semibold">Rs. {p.price}</p>
-                  </div>
-                  <div className="mt-3 flex justify-between gap-2">
-                    <Link href={`/products/${p._id}`} className="flex-1">
+                <Card key={p._id} className="flex flex-col">
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between text-sm">
+                      <span>{p.name}</span>
+                      {p.category && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {p.category.name}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col justify-between gap-3">
+                    <p className="text-sm font-semibold">Rs. {p.price}</p>
+                    <Link href={`/products/${p._id}`} className="w-full">
                       <Button variant="outline" className="w-full text-xs">
-                        View
+                        View details
                       </Button>
                     </Link>
-                  </div>
-                </article>
+                  </CardContent>
+                </Card>
               ))}
             </section>
           </div>

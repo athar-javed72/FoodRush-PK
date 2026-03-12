@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/header';
 import { apiClient } from '@/api/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader } from '@/components/ui/loader';
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<any | null>(null);
@@ -49,26 +51,50 @@ export default function AdminDashboardPage() {
             </Link>
           </nav>
         </div>
-        {loading && <p>Loading dashboard...</p>}
+        {loading && <Loader className="my-6" />}
         {error && <p className="text-sm text-red-500">{error}</p>}
         {!loading && data && (
           <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-md border bg-card p-4 text-sm">
-              <p className="text-xs text-muted-foreground">Total users</p>
-              <p className="text-xl font-semibold">{data.summary.totalUsers}</p>
-            </div>
-            <div className="rounded-md border bg-card p-4 text-sm">
-              <p className="text-xs text-muted-foreground">Total products</p>
-              <p className="text-xl font-semibold">{data.summary.totalProducts}</p>
-            </div>
-            <div className="rounded-md border bg-card p-4 text-sm">
-              <p className="text-xs text-muted-foreground">Total orders</p>
-              <p className="text-xl font-semibold">{data.summary.totalOrders}</p>
-            </div>
-            <div className="rounded-md border bg-card p-4 text-sm">
-              <p className="text-xs text-muted-foreground">Total revenue</p>
-              <p className="text-xl font-semibold">Rs. {data.summary.totalRevenue}</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Total users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{data.summary.totalUsers}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Total products
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{data.summary.totalProducts}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Total orders
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">{data.summary.totalOrders}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  Total revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-semibold">Rs. {data.summary.totalRevenue}</p>
+              </CardContent>
+            </Card>
           </div>
         )}
       </main>

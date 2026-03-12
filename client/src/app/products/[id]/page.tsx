@@ -7,6 +7,9 @@ import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/app/store';
 import { addToCart } from '@/features/cart/cartSlice';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/EmptyState';
 
 export default function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -41,18 +44,46 @@ export default function ProductDetailsPage() {
     <>
       <Header />
       <main className="container py-6">
-        {loading && <p>Loading product...</p>}
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        {!loading && product && (
+        {loading && (
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="flex h-60 items-center justify-center rounded-lg border bg-muted">
-              <span className="text-sm text-muted-foreground">Image placeholder</span>
-            </div>
+            <Skeleton className="h-60 rounded-lg" />
             <div className="space-y-3">
-              <h1 className="text-2xl font-semibold">{product.name}</h1>
-              <p className="text-sm text-muted-foreground">{product.description}</p>
-              <p className="text-lg font-semibold">Rs. {product.price}</p>
+              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-9 w-32" />
+            </div>
+          </div>
+        )}
+        {error && (
+          <EmptyState
+            title="We couldn't load this item"
+            message={error}
+            actionLabel="Back to menu"
+            actionHref="/menu"
+          />
+        )}
+
+        {!loading && !error && product && (
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="flex h-64 items-center justify-center rounded-xl border bg-muted">
+              <span className="text-sm text-muted-foreground">
+                Product image coming soon for {product.name}
+              </span>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <h1 className="text-2xl font-semibold tracking-tight">{product.name}</h1>
+                {product.category && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {product.category.name}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {product.description}
+              </p>
+              <p className="text-xl font-semibold">Rs. {product.price}</p>
               <Button onClick={handleAddToCart}>Add to cart</Button>
             </div>
           </div>
