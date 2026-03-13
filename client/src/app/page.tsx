@@ -10,7 +10,9 @@ export default function Home() {
     <>
       <Header />
       <main className="flex flex-1 flex-col bg-gradient-to-b from-background to-muted/40">
-        <section className="container flex flex-1 flex-col items-center justify-center gap-10 py-10 md:grid md:grid-cols-2 md:items-center">
+        <section className="relative container flex flex-1 flex-col items-center justify-center gap-10 py-10 md:grid md:grid-cols-2 md:items-center">
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1600&q=80&auto=format&fit=crop')] bg-cover bg-center" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/80 via-background/70 to-background/90" />
           <FadeIn className="space-y-5 text-center md:text-left">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               Fast, fresh, and right on time

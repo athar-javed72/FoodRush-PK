@@ -29,6 +29,7 @@ export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | 'all'>('all');
 
   useEffect(() => {
     async function load() {
@@ -49,6 +50,11 @@ export default function MenuPage() {
     load();
   }, []);
 
+  const filteredProducts =
+    activeCategoryId === 'all'
+      ? products
+      : products.filter((p) => p.category?._id === activeCategoryId);
+
   return (
     <>
       <Header />
@@ -60,6 +66,12 @@ export default function MenuPage() {
               Browse categories and choose your favourite items.
             </p>
           </div>
+          {!loading && !error && (
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-semibold">{filteredProducts.length}</span> item
+              {filteredProducts.length === 1 ? '' : 's'}
+            </p>
+          )}
         </FadeIn>
 
         {loading && (
@@ -88,26 +100,46 @@ export default function MenuPage() {
 
         {!loading && !error && (
           <div className="grid gap-6 md:grid-cols-[220px,1fr]">
-            <FadeIn delay={0.02} className="space-y-2">
+            <FadeIn delay={0.02} className="space-y-3">
               <h2 className="text-sm font-semibold uppercase text-muted-foreground">Categories</h2>
-              <ul className="space-y-1 text-sm">
+              <div className="flex w-full gap-2 overflow-x-auto pb-1 text-xs md:block md:overflow-visible">
+                <button
+                  type="button"
+                  onClick={() => setActiveCategoryId('all')}
+                  className={`whitespace-nowrap rounded-full border px-3 py-1 transition-colors ${
+                    activeCategoryId === 'all'
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  All
+                </button>
                 {categories.map((cat) => (
-                  <li key={cat._id}>
-                    <Badge variant="outline">{cat.name}</Badge>
-                  </li>
+                  <button
+                    key={cat._id}
+                    type="button"
+                    onClick={() => setActiveCategoryId(cat._id)}
+                    className={`whitespace-nowrap rounded-full border px-3 py-1 transition-colors ${
+                      activeCategoryId === cat._id
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
                 ))}
-              </ul>
+              </div>
             </FadeIn>
             <section className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-              {products.length === 0 && (
+              {filteredProducts.length === 0 && (
                 <EmptyState
                   title="No products yet"
                   message="As soon as the restaurant adds products, they will appear here."
                 />
               )}
-              {products.map((p, index) => (
+              {filteredProducts.map((p, index) => (
                 <FadeIn key={p._id} delay={0.02 + index * 0.015}>
-                  <Card className="flex flex-col transition-transform duration-150 hover:-translate-y-1">
+                  <Card className="flex flex-col border-muted bg-card/80 shadow-sm transition-transform duration-150 hover:-translate-y-1 hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between text-sm">
                         <span>{p.name}</span>
