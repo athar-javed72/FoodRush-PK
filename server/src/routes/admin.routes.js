@@ -3,7 +3,8 @@ import { authMiddleware, adminMiddleware } from '../middlewares/auth.middleware.
 import {
   getDashboard,
   getTopProductsController,
-  getOrderStatsController
+  getOrderStatsController,
+  getAnalyticsOverviewController
 } from '../controllers/analytics.controller.js';
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const router = express.Router();
 router.use(authMiddleware, adminMiddleware);
 
 router.get('/dashboard', getDashboard);
+router.get('/analytics/overview', getAnalyticsOverviewController);
 router.get('/top-products', getTopProductsController);
 router.get('/order-stats', getOrderStatsController);
 

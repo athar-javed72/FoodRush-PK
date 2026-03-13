@@ -112,3 +112,78 @@ export async function getOrderStats() {
   };
 }
 
+/** Start of day in local date (UTC midnight would need server TZ; using startOfDay UTC for consistency) */
+function startOfDayUTC(d) {
+  const date = new Date(d);
+  date.setUTCHours(0, 0, 0, 0);
+  return date;
+}
+
+/**
+ * Analytics overview for admin: today's orders, weekly revenue, repeat customer %.
+ * All values are derived from real Order/User data.
+ */
+export async function getAnalyticsOverview() {
+  const now = new Date();
+  const todayStart = startOfDayUTC(now);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setUTCDate(yesterdayStart.getUTCDate() - 1);
+  const yesterdayEnd = new Date(todayStart);
+  const sevenDaysAgo = new Date(todayStart);
+  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+
+  const [todayOrders, yesterdayOrders, weeklyAggregate, repeatAggregate] = await Promise.all([
+    Order.countDocuments({
+      createdAt: { $gte: todayStart, $lt: todayEnd }
+    }),
+    Order.countDocuments({
+      createdAt: { $gte: yesterdayStart, $lt: yesterdayEnd }
+    }),
+    Order.aggregate([
+      { $match: { createdAt: { $gte: sevenDaysAgo, $lt: todayEnd } } },
+      {
+        $group: {
+          _id: null,
+          revenue: { $sum: '$totalAmount' },
+          orderCount: { $sum: 1 }
+        }
+      }
+    ]),
+    Order.aggregate([
+      { $group: { _id: '$user', orderCount: { $sum: 1 } } },
+      {
+        $group: {
+          _id: null,
+          totalCustomers: { $sum: 1 },
+          repeatCustomers: { $sum: { $cond: [{ $gte: ['$orderCount', 2] }, 1, 0] } }
+        }
+      }
+    ])
+  ]);
+
+  const weeklyRevenue = weeklyAggregate.length ? weeklyAggregate[0].revenue : 0;
+  const totalCustomersWithOrders = repeatAggregate.length ? repeatAggregate[0].totalCustomers : 0;
+  const repeatCustomers = repeatAggregate.length ? repeatAggregate[0].repeatCustomers : 0;
+  const repeatCustomerPercent =
+    totalCustomersWithOrders > 0
+      ? Math.round((repeatCustomers / totalCustomersWithOrders) * 100)
+      : 0;
+
+  const yesterdayTotal = yesterdayOrders || 1;
+  const todayVsYesterdayPercent =
+    yesterdayOrders === 0
+      ? (todayOrders > 0 ? 100 : 0)
+      : Math.round(((todayOrders - yesterdayOrders) / yesterdayTotal) * 100);
+
+  return {
+    todayOrderCount: todayOrders,
+    yesterdayOrderCount: yesterdayOrders,
+    todayVsYesterdayPercent,
+    weeklyRevenue,
+    repeatCustomerPercent,
+    totalCustomersWithOrders
+  };
+}
+

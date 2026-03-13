@@ -8,6 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node src/seed.js",
+    "seed:data": "node src/seedData.js",
     "lint": "echo \"Add linter config (eslint) if needed\""
   },
   "keywords": [

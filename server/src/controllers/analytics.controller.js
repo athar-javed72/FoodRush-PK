@@ -1,6 +1,11 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { successResponse } from '../utils/response.util.js';
-import { getDashboardSummary, getTopProducts, getOrderStats } from '../services/analytics.service.js';
+import {
+  getDashboardSummary,
+  getTopProducts,
+  getOrderStats,
+  getAnalyticsOverview
+} from '../services/analytics.service.js';
 
 export const getDashboard = asyncHandler(async (_req, res) => {
   const data = await getDashboardSummary();
@@ -24,6 +29,14 @@ export const getOrderStatsController = asyncHandler(async (_req, res) => {
   return successResponse(res, {
     message: 'Order stats fetched successfully',
     data: stats
+  });
+});
+
+export const getAnalyticsOverviewController = asyncHandler(async (_req, res) => {
+  const overview = await getAnalyticsOverview();
+  return successResponse(res, {
+    message: 'Analytics overview fetched successfully',
+    data: overview
   });
 });
 
