@@ -9,6 +9,7 @@ import reviewRoutes from './review.routes.js';
 import adminRoutes from './admin.routes.js';
 import addressRoutes from './address.routes.js';
 import couponRoutes from './coupon.routes.js';
+import driverRoutes from './driver.routes.js';
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use('/reviews', reviewRoutes);
 router.use('/admin', adminRoutes);
 router.use('/addresses', addressRoutes);
 router.use('/coupons', couponRoutes);
+router.use('/driver', driverRoutes);
 
 export default router;

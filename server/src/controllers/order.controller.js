@@ -5,7 +5,10 @@ import {
   getUserOrders,
   getOrderByIdForUser,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  assignDriverToOrder,
+  getOrdersForDriver,
+  updateOrderStatusByDriver
 } from '../services/order.service.js';
 
 export const createOrder = asyncHandler(async (req, res) => {
@@ -52,6 +55,15 @@ export const updateOrderStatusController = asyncHandler(async (req, res) => {
   const order = await updateOrderStatus(req.params.id, status);
   return successResponse(res, {
     message: 'Order status updated successfully',
+    data: { order }
+  });
+});
+
+export const assignDriverController = asyncHandler(async (req, res) => {
+  const { driverId } = req.body;
+  const order = await assignDriverToOrder(req.params.id, driverId);
+  return successResponse(res, {
+    message: 'Driver assigned successfully',
     data: { order }
   });
 });

@@ -9,6 +9,9 @@ import { logout } from '@/features/auth/authSlice';
 import { useAppDispatch } from '@/app/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 function useCartCount() {
   const user = useAppSelector((s) => s.auth.user);
@@ -25,6 +28,7 @@ export function Header() {
   const cartCount = useCartCount();
   const dispatch = useAppDispatch();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useLanguage();
 
   const handleLogout = () => {
     dispatch(logout());
@@ -34,13 +38,13 @@ export function Header() {
   const NavLinks = () => (
     <>
       <Link href="/menu" className="text-sm text-muted-foreground hover:text-primary">
-        Menu
+        {t('menu')}
       </Link>
       <Link
         href="/cart"
         className="relative inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
       >
-        Cart
+        {t('cart')}
         {cartCount > 0 && (
           <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-[10px]">
             {cartCount}
@@ -48,19 +52,19 @@ export function Header() {
         )}
       </Link>
       <Link href="/wishlist" className="text-sm text-muted-foreground hover:text-primary">
-        Wishlist
+        {t('wishlist')}
       </Link>
       {user ? (
         <>
           <Link href="/orders" className="text-sm text-muted-foreground hover:text-primary">
-            Orders
+            {t('orders')}
           </Link>
           <Link href="/profile" className="text-sm text-muted-foreground hover:text-primary">
-            Profile
+            {t('profile')}
           </Link>
           {user.role === 'admin' && (
             <Link href="/admin" className="text-sm text-muted-foreground hover:text-primary">
-              Admin
+              {t('admin')}
             </Link>
           )}
           <Button
@@ -69,16 +73,16 @@ export function Header() {
             className="text-xs"
             onClick={handleLogout}
           >
-            Logout
+            {t('logout')}
           </Button>
         </>
       ) : (
         <>
           <Link href="/login" className="text-sm text-muted-foreground hover:text-primary">
-            Login
+            {t('login')}
           </Link>
           <Link href="/register" className="text-sm text-muted-foreground hover:text-primary">
-            Register
+            {t('register')}
           </Link>
         </>
       )}
@@ -98,11 +102,15 @@ export function Header() {
             priority
           />
           <Badge className="hidden text-[10px] font-medium uppercase tracking-wide text-primary md:inline-flex">
-            Fast food, delivered
+            {t('tagline')}
           </Badge>
         </Link>
 
         <nav className="hidden items-center gap-4 md:flex">
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <LanguageSwitcher />
+          </div>
           <NavLinks />
         </nav>
 
@@ -120,6 +128,10 @@ export function Header() {
       {mobileOpen && (
         <div className="border-t bg-background/95 pb-3 pt-2 md:hidden">
           <div className="container flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2 py-2">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+            </div>
             <NavLinks />
           </div>
         </div>

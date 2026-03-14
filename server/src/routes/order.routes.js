@@ -6,9 +6,14 @@ import {
   getMyOrders,
   getOrder,
   getAllOrdersController,
-  updateOrderStatusController
+  updateOrderStatusController,
+  assignDriverController
 } from '../controllers/order.controller.js';
-import { createOrderSchema, updateOrderStatusSchema } from '../validators/order.validator.js';
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+  assignDriverSchema
+} from '../validators/order.validator.js';
 
 const router = express.Router();
 
@@ -25,6 +30,13 @@ router.put(
   adminMiddleware,
   validate(updateOrderStatusSchema),
   updateOrderStatusController
+);
+router.put(
+  '/:id/assign',
+  authMiddleware,
+  adminMiddleware,
+  validate(assignDriverSchema),
+  assignDriverController
 );
 
 export default router;

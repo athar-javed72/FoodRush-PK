@@ -99,6 +99,11 @@ const orderSchema = new mongoose.Schema(
     },
     notes: {
       type: String
+    },
+    assignedDriver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     }
   },
   {
@@ -108,6 +113,7 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ orderStatus: 1, createdAt: -1 });
+orderSchema.index({ assignedDriver: 1, orderStatus: 1 });
 
 export const Order = mongoose.model('Order', orderSchema);
 

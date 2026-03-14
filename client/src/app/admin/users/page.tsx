@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { apiClient } from '@/api/client';
 import { Loader } from '@/components/ui/loader';
 
-const ROLES = ['customer', 'admin'] as const;
+const ROLES = ['customer', 'admin', 'driver'] as const;
 
 interface User {
   _id: string;
@@ -19,6 +19,7 @@ interface User {
 
 function roleLabel(role: string) {
   if (role === 'admin') return 'Admin';
+  if (role === 'driver') return 'Driver';
   return 'Customer';
 }
 

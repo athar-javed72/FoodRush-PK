@@ -80,14 +80,23 @@ export async function getUserOrders(userId) {
 }
 
 export async function getOrderByIdForUser(orderId, user) {
-  const order = await Order.findById(orderId).populate(['items.product', 'coupon']);
+  const order = await Order.findById(orderId).populate([
+    'items.product',
+    'coupon',
+    'assignedDriver'
+  ]);
   if (!order) {
     const err = new Error('Order not found');
     err.statusCode = 404;
     throw err;
   }
 
-  if (user.role !== 'admin' && order.user.toString() !== user.id) {
+  const isOwner = order.user.toString() === user.id;
+  const driverId = order.assignedDriver
+    ? (order.assignedDriver._id || order.assignedDriver).toString()
+    : null;
+  const isAssignedDriver = driverId === user.id;
+  if (user.role !== 'admin' && !isOwner && !isAssignedDriver) {
     const err = new Error('Not authorized to view this order');
     err.statusCode = 403;
     throw err;
@@ -112,6 +121,7 @@ export async function getAllOrders(filters = {}) {
       .skip(skip)
       .limit(limit)
       .populate('user', 'name email')
+      .populate('assignedDriver', 'name email phone')
       .populate(['items.product', 'coupon']),
     Order.countDocuments(query)
   ]);
@@ -144,6 +154,51 @@ export async function updateOrderStatus(orderId, newStatus) {
   // Simple status update for V1; more strict transitions can be added later
   order.orderStatus = newStatus;
   await order.save();
-  return order.populate(['user', 'items.product', 'coupon']);
+  return order.populate(['user', 'items.product', 'coupon', 'assignedDriver']);
+}
+
+export async function assignDriverToOrder(orderId, driverId) {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    const err = new Error('Order not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  order.assignedDriver = driverId;
+  await order.save();
+  return order.populate(['user', 'items.product', 'coupon', 'assignedDriver']);
+}
+
+export async function getOrdersForDriver(driverId, filters = {}) {
+  const query = { assignedDriver: driverId };
+  if (filters.status) {
+    query.orderStatus = filters.status;
+  }
+  return Order.find(query)
+    .sort({ createdAt: -1 })
+    .populate('user', 'name email phone')
+    .populate(['items.product', 'assignedDriver']);
+}
+
+export async function updateOrderStatusByDriver(orderId, driverId, newStatus) {
+  const order = await Order.findById(orderId).populate('assignedDriver');
+  if (!order) {
+    const err = new Error('Order not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  if (order.assignedDriver?._id?.toString() !== driverId) {
+    const err = new Error('Not assigned to this order');
+    err.statusCode = 403;
+    throw err;
+  }
+  if (!Object.values(ORDER_STATUS).includes(newStatus)) {
+    const err = new Error('Invalid order status');
+    err.statusCode = 400;
+    throw err;
+  }
+  order.orderStatus = newStatus;
+  await order.save();
+  return order.populate(['user', 'items.product', 'coupon', 'assignedDriver']);
 }
 

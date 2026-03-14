@@ -2,10 +2,12 @@
 
 import { useEffect } from 'react';
 import { Provider } from 'react-redux';
+import { ThemeProvider } from 'next-themes';
 import { store } from './store';
 import { attachInterceptors } from '@/api/client';
 import { loadWishlistFromStorage, setWishlist } from '@/features/wishlist/wishlistSlice';
 import { CartMergeEffect } from '@/components/CartMergeEffect';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -14,10 +16,14 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     if (saved.length) store.dispatch(setWishlist(saved));
   }, []);
   return (
-    <Provider store={store}>
-      <CartMergeEffect />
-      {children}
-    </Provider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <Provider store={store}>
+        <LanguageProvider>
+          <CartMergeEffect />
+          {children}
+        </LanguageProvider>
+      </Provider>
+    </ThemeProvider>
   );
 }
 

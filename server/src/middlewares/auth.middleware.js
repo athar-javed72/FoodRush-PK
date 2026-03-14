@@ -60,3 +60,14 @@ export function adminMiddleware(req, res, next) {
   return next();
 }
 
+export function driverMiddleware(req, res, next) {
+  if (!req.user || req.user.role !== ROLES.DRIVER) {
+    return errorResponse(res, {
+      statusCode: 403,
+      message: 'Forbidden',
+      errors: [{ message: 'Driver access required' }]
+    });
+  }
+  return next();
+}
+

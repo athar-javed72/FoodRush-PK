@@ -16,3 +16,9 @@ export const updateOrderStatusSchema = Joi.object({
   })
 });
 
+export const assignDriverSchema = Joi.object({
+  body: Joi.object({
+    driverId: Joi.string().required()
+  })
+});
+

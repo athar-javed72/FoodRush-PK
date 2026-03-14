@@ -30,6 +30,13 @@ interface OrderItem {
   lineTotal: number;
 }
 
+interface Driver {
+  _id: string;
+  name: string;
+  email?: string;
+  role: string;
+}
+
 interface Order {
   _id: string;
   user: OrderUser;
@@ -37,6 +44,7 @@ interface Order {
   totalAmount: number;
   orderStatus: string;
   createdAt: string;
+  assignedDriver?: Driver | null;
 }
 
 function toCSV(orders: Order[]): string {
@@ -67,12 +75,20 @@ function downloadCSV(orders: Order[]) {
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    apiClient.get('/users').then((res) => {
+      const users = res.data?.data?.users ?? [];
+      setDrivers(users.filter((u: Driver) => u.role === 'driver'));
+    }).catch(() => setDrivers([]));
+  }, []);
 
   const fetchOrders = async (page = 1) => {
     try {
@@ -110,6 +126,21 @@ export default function AdminOrdersPage() {
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Failed to update status';
       alert(msg);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleAssignDriver = async (orderId: string, driverId: string) => {
+    try {
+      setUpdatingId(orderId);
+      const res = await apiClient.put(`/orders/${orderId}/assign`, { driverId });
+      const updated = res.data?.data?.order;
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, assignedDriver: updated?.assignedDriver } : o))
+      );
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to assign driver');
     } finally {
       setUpdatingId(null);
     }
@@ -181,6 +212,7 @@ export default function AdminOrdersPage() {
                     <TableHead>Customer</TableHead>
                     <TableHead>Items</TableHead>
                     <TableHead>Total</TableHead>
+                    <TableHead>Driver</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date</TableHead>
                   </TableRow>
@@ -199,15 +231,26 @@ export default function AdminOrdersPage() {
                       <TableCell>Rs. {o.totalAmount}</TableCell>
                       <TableCell>
                         <select
+                          value={o.assignedDriver?._id ?? ''}
+                          onChange={(e) => handleAssignDriver(o._id, e.target.value)}
+                          disabled={updatingId === o._id}
+                          className="rounded border border-input bg-background px-2 py-1 text-xs"
+                        >
+                          <option value="">— Assign —</option>
+                          {drivers.map((d) => (
+                            <option key={d._id} value={d._id}>{d.name}</option>
+                          ))}
+                        </select>
+                      </TableCell>
+                      <TableCell>
+                        <select
                           value={o.orderStatus}
                           onChange={(e) => handleStatusChange(o._id, e.target.value)}
                           disabled={updatingId === o._id}
                           className="rounded border border-input bg-background px-2 py-1 text-xs"
                         >
                           {ORDER_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
+                            <option key={s} value={s}>{s}</option>
                           ))}
                         </select>
                       </TableCell>
