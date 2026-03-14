@@ -63,7 +63,11 @@ export const addToCart = createAsyncThunk(
       const res = await apiClient.post('/cart', payload);
       return res.data.data;
     } catch (err: any) {
-      const message = err.response?.data?.message || 'Failed to add to cart';
+      const status = err.response?.status;
+      const message =
+        status === 401
+          ? 'Please sign in to add items to cart'
+          : err.response?.data?.message || 'Failed to add to cart';
       return rejectWithValue(message);
     }
   }

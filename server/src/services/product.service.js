@@ -53,9 +53,11 @@ export async function listProducts({
   category,
   minPrice,
   maxPrice,
-  sort
+  sort,
+  includeUnavailable = false
 }) {
-  const filter = { isAvailable: true };
+  const filter = {};
+  if (!includeUnavailable) filter.isAvailable = true;
 
   if (category) {
     filter.category = category;
@@ -74,6 +76,7 @@ export async function listProducts({
   const sortOptions = {};
   if (sort === 'price_asc') sortOptions.price = 1;
   else if (sort === 'price_desc') sortOptions.price = -1;
+  else if (sort === 'rating' || sort === 'rating_desc') sortOptions.averageRating = -1;
   else if (sort === 'newest') sortOptions.createdAt = -1;
 
   const skip = (page - 1) * limit;

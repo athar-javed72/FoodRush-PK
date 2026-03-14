@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
+import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,6 +25,8 @@ interface Address {
 }
 
 export default function AddressesPage() {
+  const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,8 +58,12 @@ export default function AddressesPage() {
   };
 
   useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
     loadAddresses();
-  }, []);
+  }, [user, router]);
 
   const resetForm = () => {
     setEditingId(null);

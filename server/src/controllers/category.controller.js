@@ -8,8 +8,9 @@ import {
   listCategories
 } from '../services/category.service.js';
 
-export const getCategories = asyncHandler(async (_req, res) => {
-  const categories = await listCategories();
+export const getCategories = asyncHandler(async (req, res) => {
+  const includeInactive = req.query.all === 'true' && req.user?.role === 'admin';
+  const categories = await listCategories({ includeInactive: !!includeInactive });
   return successResponse(res, {
     message: 'Categories fetched successfully',
     data: { categories }

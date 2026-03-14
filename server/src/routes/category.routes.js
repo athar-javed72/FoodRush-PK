@@ -6,14 +6,14 @@ import {
   updateCategoryController,
   deleteCategoryController
 } from '../controllers/category.controller.js';
-import { authMiddleware, adminMiddleware } from '../middlewares/auth.middleware.js';
+import { optionalAuthMiddleware, authMiddleware, adminMiddleware } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { createCategorySchema, updateCategorySchema } from '../validators/category.validator.js';
 
 const router = express.Router();
 
-// Public
-router.get('/', getCategories);
+// Public (optional auth for admin ?all=1)
+router.get('/', optionalAuthMiddleware, getCategories);
 router.get('/:id', getCategory);
 
 // Admin

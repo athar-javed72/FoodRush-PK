@@ -1,31 +1,135 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
+import { apiClient } from '@/api/client';
+import { Loader } from '@/components/ui/loader';
 
-const mockOrders = [
-  { id: 'ORD123456', customer: 'Ali Khan', total: 2150, status: 'preparing' },
-  { id: 'ORD123457', customer: 'Sara Ahmed', total: 1450, status: 'on_the_way' },
-  { id: 'ORD123458', customer: 'John Doe', total: 890, status: 'delivered' }
-];
+const ORDER_STATUSES = [
+  'Pending',
+  'Confirmed',
+  'Preparing',
+  'Out for Delivery',
+  'Delivered',
+  'Cancelled'
+] as const;
 
-function statusLabel(status: string) {
-  switch (status) {
-    case 'preparing':
-      return 'Preparing';
-    case 'on_the_way':
-      return 'On the way';
-    case 'delivered':
-      return 'Delivered';
-    default:
-      return status;
-  }
+interface OrderUser {
+  _id: string;
+  name?: string;
+  email?: string;
+}
+
+interface OrderItem {
+  nameSnapshot: string;
+  priceSnapshot: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+interface Order {
+  _id: string;
+  user: OrderUser;
+  items: OrderItem[];
+  totalAmount: number;
+  orderStatus: string;
+  createdAt: string;
+}
+
+function toCSV(orders: Order[]): string {
+  const headers = ['Order ID', 'Customer', 'Email', 'Items', 'Total (Rs)', 'Status', 'Date'];
+  const rows = orders.map((o) => [
+    o._id,
+    o.user?.name ?? '',
+    o.user?.email ?? '',
+    o.items?.length ?? 0,
+    o.totalAmount,
+    o.orderStatus,
+    new Date(o.createdAt).toLocaleString()
+  ]);
+  const csvContent = [headers.join(','), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))].join('\r\n');
+  return csvContent;
+}
+
+function downloadCSV(orders: Order[]) {
+  const csv = toCSV(orders);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `foodrush-orders-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 1 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+
+  const fetchOrders = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params: Record<string, string | number> = { page, limit: 20 };
+      if (statusFilter) params.status = statusFilter;
+      const res = await apiClient.get('/orders', { params });
+      const data = res.data?.data;
+      setOrders(data?.orders ?? []);
+      setPagination(data?.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 1 });
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to load orders');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(1);
+  }, [statusFilter]);
+
+  const handlePageChange = (page: number) => {
+    fetchOrders(page);
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    try {
+      setUpdatingId(orderId);
+      await apiClient.put(`/orders/${orderId}/status`, { status: newStatus });
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, orderStatus: newStatus } : o))
+      );
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to update status';
+      alert(msg);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const params: Record<string, string | number> = { limit: 1000 };
+      if (statusFilter) params.status = statusFilter;
+      const res = await apiClient.get('/orders', { params });
+      const list = res.data?.data?.orders ?? [];
+      downloadCSV(list);
+    } catch (_) {
+      alert('Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -35,58 +139,114 @@ export default function AdminOrdersPage() {
             Track and manage recent orders across the platform.
           </p>
         </div>
-        <Button variant="outline" size="sm">
-          Export CSV
+        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={exporting}>
+          {exporting ? 'Exporting…' : 'Export CSV'}
         </Button>
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-sm">Recent orders</CardTitle>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+            >
+              <option value="">All</option>
+              {ORDER_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
         </CardHeader>
         <CardContent>
-          {mockOrders.length === 0 ? (
+          {loading && <Loader className="my-6" />}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          {!loading && !error && orders.length === 0 && (
             <EmptyState
               title="No orders yet"
-              message="As customers place orders, you’ll see them listed here."
+              message="As customers place orders, you'll see them listed here."
             />
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Order ID</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockOrders.map((o) => (
-                  <TableRow key={o.id}>
-                    <TableCell>{o.id}</TableCell>
-                    <TableCell>{o.customer}</TableCell>
-                    <TableCell>Rs. {o.total}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          o.status === 'delivered'
-                            ? 'success'
-                            : o.status === 'on_the_way'
-                            ? 'warning'
-                            : 'outline'
-                        }
-                      >
-                        {statusLabel(o.status)}
-                      </Badge>
-                    </TableCell>
+          )}
+          {!loading && !error && orders.length > 0 && (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {orders.map((o) => (
+                    <TableRow key={o._id}>
+                      <TableCell className="font-mono text-xs">{o._id.slice(-8)}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{o.user?.name ?? '—'}</p>
+                          <p className="text-xs text-muted-foreground">{o.user?.email ?? ''}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>{o.items?.length ?? 0}</TableCell>
+                      <TableCell>Rs. {o.totalAmount}</TableCell>
+                      <TableCell>
+                        <select
+                          value={o.orderStatus}
+                          onChange={(e) => handleStatusChange(o._id, e.target.value)}
+                          disabled={updatingId === o._id}
+                          className="rounded border border-input bg-background px-2 py-1 text-xs"
+                        >
+                          {ORDER_STATUSES.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(o.createdAt).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {pagination.totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-between border-t pt-3">
+                  <p className="text-xs text-muted-foreground">
+                    Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={pagination.page <= 1}
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={pagination.page >= pagination.totalPages}
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
     </div>
   );
 }
-

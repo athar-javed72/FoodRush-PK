@@ -3,33 +3,48 @@ import { connectDB } from './config/db.js';
 import { Category } from './models/Category.js';
 import { Product } from './models/Product.js';
 
-// High-quality Unsplash images (w=800, q=80 for clarity)
+// High-quality Unsplash images — name matches product (w=800, q=80)
 const IMG = {
   burger: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&q=80',
-  cheeseburger: 'https://images.unsplash.com/photo-1553979459-daff9bab4b66?w=800&q=80',
+  cheeseburger: 'https://images.unsplash.com/photo-1508736793122-f516e3ba5569?w=800&q=80',
   chickenBurger: 'https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=800&q=80',
   sandwich: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&q=80',
-  fries: 'https://images.unsplash.com/photo-1573089894624-3bcd0f9d2c2b?w=800&q=80',
+  fries: 'https://images.unsplash.com/photo-1606755456206-b25206cde27e?w=800&q=80',
   friedChicken: 'https://images.unsplash.com/photo-1626645738196-c2a72c7d649b?w=800&q=80',
   nuggets: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=800&q=80',
   wings: 'https://images.unsplash.com/photo-1567620836583-6f6cf7e9c6f6?w=800&q=80',
   onionRings: 'https://images.unsplash.com/photo-1639024471283-03518883512d?w=800&q=80',
   taco: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=800&q=80',
-  burrito: 'https://images.unsplash.com/photo-1534352956578-2e8e4c4f5c3d?w=800&q=80',
+  burrito: 'https://images.unsplash.com/photo-1632660346941-023cc64e1252?w=800&q=80',
   nachos: 'https://images.unsplash.com/photo-1547592168-8198c8c43a8e?w=800&q=80',
   quesadilla: 'https://images.unsplash.com/photo-1618040996337-27b2b726160b?w=800&q=80',
   pizza: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80',
   pizzaSlice: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&q=80',
-  pasta: 'https://images.unsplash.com/photo-1551183053-2d2ff6c2f4c4?w=800&q=80',
-  kebab: 'https://images.unsplash.com/photo-1603360946360-e981e4d7f2a8?w=800&q=80',
+  pasta: 'https://images.unsplash.com/photo-1696935242644-cce4c40d17c4?w=800&q=80',
+  kebab: 'https://images.unsplash.com/photo-1755438538504-97119f066871?w=800&q=80',
   shawarma: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=800&q=80',
-  fishChips: 'https://images.unsplash.com/photo-1579208575657-c595a05383b7?w=800&q=80',
+  fishChips: 'https://images.unsplash.com/photo-1764397557799-258db31fe6a4?w=800&q=80',
   donut: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=800&q=80',
   iceCream: 'https://images.unsplash.com/photo-1560008581-98ca296fd14a?w=800&q=80',
   milkshake: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=800&q=80',
   brownie: 'https://images.unsplash.com/photo-1564355808539-22fda35bed7e?w=800&q=80',
   cookie: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80',
-  pretzel: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?w=800&q=80'
+  pretzel: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=800&q=80',
+  // Beverages — each product has its own correct image
+  cola: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=800&q=80',
+  pepsi: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=800&q=80',
+  mirinda: 'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=800&q=80',
+  sprite: 'https://images.unsplash.com/photo-1680404005217-a441afdefe83?w=800&q=80',
+  sevenUp: 'https://images.unsplash.com/photo-1680404005217-a441afdefe83?w=800&q=80',
+  water: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=800&q=80',
+  juice: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=800&q=80',
+  mangoJuice: 'https://images.unsplash.com/photo-1764403713624-44a80917851b?w=800&q=80',
+  lemonade: 'https://images.unsplash.com/photo-1621263764928-df1444c5e859?w=800&q=80',
+  icedTea: 'https://images.unsplash.com/photo-1676159435365-e4401cd933af?w=800&q=80',
+  coffee: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+  tea: 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=800&q=80',
+  greenTea: 'https://images.unsplash.com/photo-1727726672422-0fff852450f9?w=800&q=80',
+  energyDrink: 'https://images.unsplash.com/photo-1579217809265-e45e5449610a?w=800&q=80'
 };
 
 function slug(s) {
@@ -45,7 +60,8 @@ async function seed() {
     { name: 'Mexican-Inspired', description: 'Tacos, burritos, nachos, and quesadillas' },
     { name: 'Pizza & Italian', description: 'Pizza slices, whole pizzas, and pasta' },
     { name: 'International Fast Food', description: 'Kebabs, shawarma, fish and chips' },
-    { name: 'Snacks & Desserts', description: 'Donuts, ice cream, milkshakes, cookies, and treats' }
+    { name: 'Snacks & Desserts', description: 'Donuts, ice cream, milkshakes, cookies, and treats' },
+    { name: 'Beverages', description: 'Cold drinks, juices, tea, coffee, and more' }
   ];
 
   console.log('Creating categories...');
@@ -93,24 +109,43 @@ async function seed() {
     { name: 'Chocolate Milkshake', category: 'Snacks & Desserts', price: 299, description: 'Thick chocolate milkshake with whipped cream.', image: IMG.milkshake },
     { name: 'Chocolate Brownie', category: 'Snacks & Desserts', price: 199, description: 'Warm chocolate brownie with nuts.', image: IMG.brownie },
     { name: 'Chocolate Chip Cookie', category: 'Snacks & Desserts', price: 80, description: 'Fresh-baked cookie with chocolate chips.', image: IMG.cookie },
-    { name: 'Soft Pretzel', category: 'Snacks & Desserts', price: 149, description: 'Soft pretzel with salt and cheese dip.', image: IMG.pretzel }
+    { name: 'Soft Pretzel', category: 'Snacks & Desserts', price: 149, description: 'Soft pretzel with salt and cheese dip.', image: IMG.pretzel },
+    // Beverages
+    { name: 'Coca Cola', category: 'Beverages', price: 80, description: 'Chilled Coca Cola 300ml.', image: IMG.cola },
+    { name: 'Pepsi', category: 'Beverages', price: 80, description: 'Chilled Pepsi 300ml.', image: IMG.pepsi },
+    { name: 'Mirinda', category: 'Beverages', price: 80, description: 'Orange fizzy drink 300ml.', image: IMG.mirinda },
+    { name: '7Up', category: 'Beverages', price: 80, description: 'Lemon-lime soda 300ml.', image: IMG.sevenUp },
+    { name: 'Sprite', category: 'Beverages', price: 80, description: 'Lemon-lime refreshment 300ml.', image: IMG.sprite },
+    { name: 'Mineral Water', category: 'Beverages', price: 50, description: 'Bottled mineral water 500ml.', image: IMG.water },
+    { name: 'Fresh Orange Juice', category: 'Beverages', price: 150, description: 'Freshly squeezed orange juice.', image: IMG.juice },
+    { name: 'Mango Juice', category: 'Beverages', price: 120, description: 'Sweet mango juice 250ml.', image: IMG.mangoJuice },
+    { name: 'Lemonade', category: 'Beverages', price: 100, description: 'Fresh lemonade with mint.', image: IMG.lemonade },
+    { name: 'Iced Tea', category: 'Beverages', price: 120, description: 'Chilled iced tea, peach or lemon.', image: IMG.icedTea },
+    { name: 'Hot Coffee', category: 'Beverages', price: 180, description: 'Freshly brewed coffee.', image: IMG.coffee },
+    { name: 'Karak Chai', category: 'Beverages', price: 80, description: 'Strong masala karak chai.', image: IMG.tea },
+    { name: 'Green Tea', category: 'Beverages', price: 100, description: 'Hot or iced green tea.', image: IMG.greenTea },
+    { name: 'Energy Drink', category: 'Beverages', price: 200, description: 'Energy drink 250ml.', image: IMG.energyDrink }
   ];
 
-  console.log('Creating products...');
+  console.log('Creating/updating products...');
   for (const p of productsData) {
     const catId = categories[p.category];
     const slugVal = slug(p.name);
+    const payload = {
+      name: p.name,
+      slug: slugVal,
+      description: p.description,
+      category: catId,
+      price: p.price,
+      image: p.image,
+      isAvailable: true
+    };
     const existing = await Product.findOne({ slug: slugVal });
-    if (!existing) {
-      await Product.create({
-        name: p.name,
-        slug: slugVal,
-        description: p.description,
-        category: catId,
-        price: p.price,
-        image: p.image,
-        isAvailable: true
-      });
+    if (existing) {
+      await Product.findByIdAndUpdate(existing._id, payload);
+      console.log('  ~', p.name, '(updated image & details)');
+    } else {
+      await Product.create(payload);
       console.log('  +', p.name, '- Rs.', p.price);
     }
   }

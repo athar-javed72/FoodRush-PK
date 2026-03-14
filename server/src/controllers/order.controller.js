@@ -35,11 +35,15 @@ export const getOrder = asyncHandler(async (req, res) => {
 });
 
 export const getAllOrdersController = asyncHandler(async (req, res) => {
-  const { status } = req.query;
-  const orders = await getAllOrders({ status });
+  const { status, page, limit } = req.query;
+  const result = await getAllOrders({
+    status: status || undefined,
+    page: page ? Number(page) : undefined,
+    limit: limit ? Number(limit) : undefined
+  });
   return successResponse(res, {
     message: 'All orders fetched successfully',
-    data: { orders }
+    data: result
   });
 });
 

@@ -8,6 +8,7 @@ import orderRoutes from './order.routes.js';
 import reviewRoutes from './review.routes.js';
 import adminRoutes from './admin.routes.js';
 import addressRoutes from './address.routes.js';
+import couponRoutes from './coupon.routes.js';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/orders', orderRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/admin', adminRoutes);
 router.use('/addresses', addressRoutes);
+router.use('/coupons', couponRoutes);
 
 export default router;

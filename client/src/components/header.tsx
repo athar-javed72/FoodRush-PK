@@ -10,8 +10,19 @@ import { useAppDispatch } from '@/app/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+function useCartCount() {
+  const user = useAppSelector((s) => s.auth.user);
+  const cartItems = useAppSelector((s) => s.cart.items);
+  const guestCart = useAppSelector((s) => s.guestCart);
+  if (user) {
+    return cartItems.reduce((sum, i) => sum + i.quantity, 0);
+  }
+  return guestCart.reduce((sum, i) => sum + i.quantity, 0);
+}
+
 export function Header() {
   const { user } = useAppSelector((state) => state.auth);
+  const cartCount = useCartCount();
   const dispatch = useAppDispatch();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -25,8 +36,19 @@ export function Header() {
       <Link href="/menu" className="text-sm text-muted-foreground hover:text-primary">
         Menu
       </Link>
-      <Link href="/cart" className="text-sm text-muted-foreground hover:text-primary">
+      <Link
+        href="/cart"
+        className="relative inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
+      >
         Cart
+        {cartCount > 0 && (
+          <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-[10px]">
+            {cartCount}
+          </Badge>
+        )}
+      </Link>
+      <Link href="/wishlist" className="text-sm text-muted-foreground hover:text-primary">
+        Wishlist
       </Link>
       {user ? (
         <>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/header';
+import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,11 +12,17 @@ import { EmptyState } from '@/components/EmptyState';
 
 export default function OrderDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
   const [order, setOrder] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
     async function load() {
       try {
         setLoading(true);
@@ -28,7 +35,7 @@ export default function OrderDetailsPage() {
       }
     }
     if (id) load();
-  }, [id]);
+  }, [id, user, router]);
 
   return (
     <>

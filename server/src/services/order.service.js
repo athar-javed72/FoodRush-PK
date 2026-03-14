@@ -102,9 +102,29 @@ export async function getAllOrders(filters = {}) {
     query.orderStatus = filters.status;
   }
 
-  return Order.find(query)
-    .sort({ createdAt: -1 })
-    .populate(['user', 'items.product', 'coupon']);
+  const page = Math.max(1, Number(filters.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(filters.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const [orders, total] = await Promise.all([
+    Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name email')
+      .populate(['items.product', 'coupon']),
+    Order.countDocuments(query)
+  ]);
+
+  return {
+    orders,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 1
+    }
+  };
 }
 
 export async function updateOrderStatus(orderId, newStatus) {

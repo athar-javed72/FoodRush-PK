@@ -16,8 +16,11 @@ export const getProducts = asyncHandler(async (req, res) => {
     category,
     minPrice,
     maxPrice,
-    sort
+    sort,
+    all
   } = req.query;
+
+  const includeUnavailable = all === 'true' && req.user?.role === 'admin';
 
   const result = await listProducts({
     page: Number(page) || 1,
@@ -26,7 +29,8 @@ export const getProducts = asyncHandler(async (req, res) => {
     category,
     minPrice: minPrice !== undefined ? Number(minPrice) : undefined,
     maxPrice: maxPrice !== undefined ? Number(maxPrice) : undefined,
-    sort
+    sort,
+    includeUnavailable: !!includeUnavailable
   });
 
   return successResponse(res, {

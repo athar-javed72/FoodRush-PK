@@ -45,7 +45,8 @@ export async function getCategoryById(id) {
   return category;
 }
 
-export async function listCategories() {
-  return Category.find({ isActive: true }).sort({ name: 1 });
+export async function listCategories(opts = {}) {
+  const filter = opts.includeInactive ? {} : { isActive: true };
+  return Category.find(filter).sort({ name: 1 });
 }
 

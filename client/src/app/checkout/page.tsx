@@ -31,6 +31,8 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [couponValidateMsg, setCouponValidateMsg] = useState<string | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -43,7 +45,7 @@ export default function CheckoutPage() {
         const res = await apiClient.get('/addresses');
         setAddresses(res.data.data.addresses || []);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load addresses');
+        setError(err.response?.data?.message || 'Failed to load addresses. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -67,10 +69,49 @@ export default function CheckoutPage() {
       setSummary(res.data.data);
       setSuccess('Checkout is ready. You can now place your order.');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to prepare checkout');
+      const msg = err.response?.data?.message || '';
+      const friendly =
+        msg.toLowerCase().includes('address') || msg.includes('Invalid address')
+          ? 'Address not found. Please select a valid saved address.'
+          : msg.toLowerCase().includes('cart') && msg.toLowerCase().includes('empty')
+          ? 'Your cart is empty. Add items from the menu first.'
+          : msg.toLowerCase().includes('coupon') || msg.toLowerCase().includes('expired')
+          ? 'Invalid or expired coupon. Check the code or try without it.'
+          : msg.toLowerCase().includes('minimum') || msg.toLowerCase().includes('amount')
+          ? 'Order amount does not meet the minimum for this coupon.'
+          : msg || 'Failed to prepare checkout. Please try again.';
+      setError(friendly);
       setSuccess(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponValidateMsg('Enter a coupon code first.');
+      return;
+    }
+    try {
+      setValidatingCoupon(true);
+      setCouponValidateMsg(null);
+      const cartRes = await apiClient.get('/cart');
+      const subtotal = cartRes.data?.data?.cart?.subtotal ?? 0;
+      const valRes = await apiClient.post('/cart/coupon/validate', {
+        code: couponCode.trim(),
+        amount: subtotal
+      });
+      const discount = valRes.data?.data?.discount ?? 0;
+      setCouponValidateMsg(
+        discount > 0
+          ? `Valid! You'll get Rs. ${discount} off. Click "Apply & review" to use it.`
+          : 'Coupon is valid.'
+      );
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Invalid or expired coupon.';
+      setCouponValidateMsg(msg);
+    } finally {
+      setValidatingCoupon(false);
     }
   };
 
@@ -86,7 +127,16 @@ export default function CheckoutPage() {
       setSuccess('Order placed successfully!');
       router.replace(`/orders/${res.data.data.order._id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to place order');
+      const msg = err.response?.data?.message || '';
+      const friendly =
+        msg.toLowerCase().includes('address')
+          ? 'Address not found. Please select a valid address.'
+          : msg.toLowerCase().includes('cart') && msg.toLowerCase().includes('empty')
+          ? 'Your cart is empty.'
+          : msg.toLowerCase().includes('payment')
+          ? 'Payment failed. Please try again.'
+          : msg || 'Failed to place order. Please try again.';
+      setError(friendly);
     } finally {
       setLoading(false);
     }
@@ -158,13 +208,26 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4 text-sm">
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Coupon</p>
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Input
                       type="text"
                       value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value)}
+                      onChange={(e) => {
+                        setCouponCode(e.target.value);
+                        setCouponValidateMsg(null);
+                      }}
                       placeholder="Enter coupon code (optional)"
+                      className="sm:max-w-[200px]"
                     />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleValidateCoupon}
+                      disabled={validatingCoupon || !couponCode.trim()}
+                    >
+                      {validatingCoupon ? 'Checking…' : 'Validate coupon'}
+                    </Button>
                     <Button type="submit" disabled={loading} className="sm:w-40">
                       {loading ? (
                         <span className="inline-flex items-center gap-2">
@@ -176,6 +239,17 @@ export default function CheckoutPage() {
                       )}
                     </Button>
                   </div>
+                  {couponValidateMsg && (
+                    <p
+                      className={
+                        couponValidateMsg.startsWith('Valid')
+                          ? 'text-xs text-emerald-600'
+                          : 'text-xs text-red-500'
+                      }
+                    >
+                      {couponValidateMsg}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">

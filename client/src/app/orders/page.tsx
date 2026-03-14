@@ -1,19 +1,27 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/header';
+import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { Loader } from '@/components/ui/loader';
 
 export default function OrdersPage() {
+  const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
     async function load() {
       try {
         setLoading(true);
@@ -26,7 +34,7 @@ export default function OrdersPage() {
       }
     }
     load();
-  }, []);
+  }, [user, router]);
 
   return (
     <>

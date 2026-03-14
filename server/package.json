@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "seed": "node src/seed.js",
     "seed:data": "node src/seedData.js",
+    "seed:admin": "node src/scripts/seedAdmin.js",
     "lint": "echo \"Add linter config (eslint) if needed\""
   },
   "keywords": [

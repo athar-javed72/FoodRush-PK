@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { login, setAuthFromStorage } from '@/features/auth/authSlice';
 import { Header } from '@/components/header';
@@ -14,6 +14,8 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const { user, loading, error } = useAppSelector((s) => s.auth);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/menu';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -28,9 +30,10 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.replace('/menu');
+      const path = returnUrl.startsWith('/') ? returnUrl : `/${returnUrl}`;
+      router.replace(path);
     }
-  }, [user, router]);
+  }, [user, router, returnUrl]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

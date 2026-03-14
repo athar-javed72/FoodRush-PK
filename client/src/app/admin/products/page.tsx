@@ -1,25 +1,155 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Modal } from '@/components/ui/modal';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
+import { apiClient } from '@/api/client';
+import { Loader } from '@/components/ui/loader';
+import { ProductImage } from '@/components/ProductImage';
 
-const mockProducts = [
-  { id: '1', name: 'Classic beef burger', category: 'Burgers', price: 750, active: true },
-  { id: '2', name: 'Loaded fries', category: 'Fries & sides', price: 490, active: true },
-  { id: '3', name: 'Chocolate shake', category: 'Drinks', price: 350, active: false }
-];
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  image?: string | null;
+  category?: Category;
+  isAvailable?: boolean;
+}
 
 export default function AdminProductsPage() {
   const [query, setQuery] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [price, setPrice] = useState('');
+  const [image, setImage] = useState('');
 
-  const filtered = mockProducts.filter((p) =>
+  const fetchCategories = async () => {
+    try {
+      const res = await apiClient.get('/categories?all=true');
+      setCategories(res.data?.data?.categories || []);
+    } catch (_) {
+      setCategories([]);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await apiClient.get('/products?all=true&limit=500');
+      const data = res.data?.data;
+      setProducts(data?.items || data?.products || []);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to load products');
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(query.toLowerCase())
   );
+
+  const handleOpen = () => {
+    setName('');
+    setDescription('');
+    setCategoryId(categories[0]?._id || '');
+    setPrice('');
+    setImage('');
+    setFormError(null);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setFormError(null);
+  };
+
+  const validate = (): boolean => {
+    if (!name.trim() || name.trim().length < 2) {
+      setFormError('Name must be at least 2 characters.');
+      return false;
+    }
+    if (!description.trim() || description.trim().length < 5) {
+      setFormError('Description must be at least 5 characters.');
+      return false;
+    }
+    if (!categoryId) {
+      setFormError('Please select a category.');
+      return false;
+    }
+    const p = Number(price);
+    if (Number.isNaN(p) || p < 0) {
+      setFormError('Price must be a valid number ≥ 0.');
+      return false;
+    }
+    setFormError(null);
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validate()) return;
+    try {
+      setSaving(true);
+      setFormError(null);
+      await apiClient.post('/products', {
+        name: name.trim(),
+        description: description.trim(),
+        category: categoryId,
+        price: Number(price),
+        image: image.trim() || undefined,
+        isAvailable: true
+      });
+      await fetchProducts();
+      handleClose();
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.errors?.[0]?.message ||
+        'Failed to save product';
+      setFormError(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (p: Product) => {
+    if (typeof window !== 'undefined' && !window.confirm(`Delete product "${p.name}"?`)) return;
+    try {
+      await apiClient.delete(`/products/${p._id}`);
+      await fetchProducts();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete product');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -30,7 +160,9 @@ export default function AdminProductsPage() {
             Manage the dishes available across your FoodRush menu.
           </p>
         </div>
-        <Button size="sm">Add product</Button>
+        <Button size="sm" onClick={handleOpen} disabled={categories.length === 0}>
+          Add product
+        </Button>
       </div>
 
       <Card>
@@ -46,31 +178,54 @@ export default function AdminProductsPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          {filtered.length === 0 ? (
+          {loading && <Loader className="my-6" />}
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          {!loading && !error && filtered.length === 0 && (
             <EmptyState
               title="No products match your search"
-              message="Try a different name or clear your filters."
+              message="Try a different name or add your first product."
             />
-          ) : (
+          )}
+          {!loading && !error && filtered.length > 0 && (
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-14">Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map((p) => (
-                  <TableRow key={p.id}>
+                  <TableRow key={p._id}>
+                    <TableCell>
+                      <div className="relative h-10 w-10 overflow-hidden rounded border bg-muted">
+                        <ProductImage src={p.image} alt={p.name} className="h-full w-full" />
+                      </div>
+                    </TableCell>
                     <TableCell>{p.name}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{p.category}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {p.category?.name ?? '—'}
+                    </TableCell>
                     <TableCell>Rs. {p.price}</TableCell>
                     <TableCell>
-                      <Badge variant={p.active ? 'success' : 'outline'}>
-                        {p.active ? 'Active' : 'Hidden'}
+                      <Badge variant={p.isAvailable !== false ? 'success' : 'outline'}>
+                        {p.isAvailable !== false ? 'Active' : 'Hidden'}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="text-xs text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(p)}
+                      >
+                        Delete
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -79,7 +234,76 @@ export default function AdminProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        title="Add product"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={handleClose} disabled={saving}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm">
+          {formError && <p className="text-red-500 text-xs">{formError}</p>}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Name</label>
+            <Input
+              placeholder="e.g. Classic beef burger"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Description</label>
+            <Input
+              placeholder="Short description (min 5 characters)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Category</label>
+            <select
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">Select category</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Price (Rs.)</label>
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              placeholder="0"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Image URL (optional)</label>
+            <Input
+              placeholder="https://..."
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
-
