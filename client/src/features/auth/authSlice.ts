@@ -8,7 +8,7 @@ export interface User {
   _id?: string;
   name: string;
   email: string;
-  role: 'customer' | 'admin' | 'driver';
+  role: 'customer' | 'admin' | 'driver' | 'manager' | 'service_associate' | 'facility_associate';
   avatar?: string | null;
   phone?: string | null;
 }

@@ -65,7 +65,7 @@ export default function CartPage() {
       dispatch(removeCartItem({ itemId }))
         .unwrap()
         .then(() => toast.success('Removed from cart'))
-        .catch((msg: string) => toast.error(msg || 'Failed to remove'));
+        .catch((msg: string) => toast.error(msg || 'Couldn\'t remove item. Please try again.'));
     }
   };
 

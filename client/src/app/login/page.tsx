@@ -53,6 +53,7 @@ export default function LoginPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Sign in to FoodRush</CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">Powered by Nexora Labs</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

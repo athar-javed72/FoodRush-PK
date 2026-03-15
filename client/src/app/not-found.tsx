@@ -26,6 +26,12 @@ export default function NotFound() {
           <Button variant="outline">Browse menu</Button>
         </Link>
       </div>
+      <p className="text-xs text-muted-foreground mt-8">
+        Built by{' '}
+        <a href="https://nexoralabs.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          Nexora Labs
+        </a>
+      </p>
     </div>
   );
 }

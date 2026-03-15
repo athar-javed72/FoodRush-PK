@@ -61,12 +61,12 @@ export default function AdminComplaintsPage() {
     setSaving(true);
     try {
       await apiClient.put(`/staff/complaints/${editing._id}/status`, { status, adminNotes: adminNotes || undefined });
-      toast.success('Complaint updated');
+      toast.success('Concern updated');
       setEditOpen(false);
       setEditing(null);
       fetchComplaints();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update');
+      toast.error(err.response?.data?.message || 'Couldn\'t update. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -75,17 +75,17 @@ export default function AdminComplaintsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">Complaints</h1>
-        <p className="text-sm text-muted-foreground">View and update status of staff complaints.</p>
+        <h1 className="text-2xl font-semibold">Team concerns</h1>
+        <p className="text-sm text-muted-foreground">View and update status of concerns shared by the team.</p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">All complaints</CardTitle>
+          <CardTitle className="text-sm">All concerns</CardTitle>
         </CardHeader>
         <CardContent>
           {loading && <Loader className="my-6" />}
           {!loading && complaints.length === 0 && (
-            <p className="text-sm text-muted-foreground">No complaints yet.</p>
+            <p className="text-sm text-muted-foreground">No concerns shared yet.</p>
           )}
           {!loading && complaints.length > 0 && (
             <ul className="space-y-3">
@@ -116,7 +116,7 @@ export default function AdminComplaintsPage() {
       <Modal
         open={editOpen}
         onClose={() => { setEditOpen(false); setEditing(null); }}
-        title="Update complaint status"
+        title="Update concern status"
         footer={
           <>
             <Button variant="outline" size="sm" onClick={() => { setEditOpen(false); setEditing(null); }} disabled={saving}>Cancel</Button>

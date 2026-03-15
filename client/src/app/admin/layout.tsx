@@ -13,8 +13,8 @@ const adminLinksAll = [
   { href: '/admin/orders', label: 'Orders' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/employees', label: 'Team' },
-  { href: '/admin/complaints', label: 'Complaints' },
-  { href: '/admin/suggestions', label: 'Suggestions' },
+  { href: '/admin/complaints', label: 'Team concerns' },
+  { href: '/admin/suggestions', label: 'Team ideas' },
   { href: '/admin/coupons', label: 'Coupons' },
   { href: '/admin/analytics', label: 'Analytics' }
 ];
@@ -63,6 +63,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             ))}
           </nav>
+          <p className="mt-6 text-[10px] text-muted-foreground">
+            Built by{' '}
+            <a href="https://nexoralabs.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              Nexora Labs
+            </a>
+          </p>
         </aside>
 
         <section className="flex-1 space-y-6">

@@ -111,7 +111,7 @@ export default function AdminEmployeesPage() {
       );
       toast.success('Role updated');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update role');
+      toast.error(err.response?.data?.message || 'Couldn\'t update role. Please try again.');
     } finally {
       setUpdatingId(null);
     }

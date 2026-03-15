@@ -109,13 +109,13 @@ export default function StaffDashboardPage() {
         subject: complaintSubject.trim(),
         description: complaintDesc.trim()
       });
-      toast.success('Complaint submitted');
+      toast.success('Concern shared');
       setComplaintOpen(false);
       setComplaintSubject('');
       setComplaintDesc('');
       fetchComplaints();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to submit complaint');
+      toast.error(err.response?.data?.message || 'Couldn\'t submit. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -132,13 +132,13 @@ export default function StaffDashboardPage() {
         subject: suggestionSubject.trim(),
         description: suggestionDesc.trim()
       });
-      toast.success('Suggestion submitted');
+      toast.success('Idea shared');
       setSuggestionOpen(false);
       setSuggestionSubject('');
       setSuggestionDesc('');
       fetchSuggestions();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to submit suggestion');
+      toast.error(err.response?.data?.message || 'Couldn\'t submit. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -152,7 +152,7 @@ export default function StaffDashboardPage() {
       toast.success('Check-in recorded');
       fetchAttendance();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to check in');
+      toast.error(err.response?.data?.message || 'Couldn\'t check in. Please try again.');
     } finally {
       setAttendanceLoading(false);
     }
@@ -166,15 +166,15 @@ export default function StaffDashboardPage() {
       toast.success('Check-out recorded');
       fetchAttendance();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to check out');
+      toast.error(err.response?.data?.message || 'Couldn\'t check out. Please try again.');
     } finally {
       setAttendanceLoading(false);
     }
   };
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'complaints', label: 'Complaints' },
-    { id: 'suggestions', label: 'Suggestions' },
+    { id: 'complaints', label: 'Share a concern' },
+    { id: 'suggestions', label: 'Share an idea' },
     { id: 'attendance', label: 'Attendance' }
   ];
 
@@ -183,7 +183,7 @@ export default function StaffDashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold">Staff Hub</h1>
         <p className="text-sm text-muted-foreground">
-          Submit complaints, suggestions, and mark your attendance here.
+          Share concerns, ideas, and mark your attendance here.
         </p>
       </div>
 
@@ -207,15 +207,15 @@ export default function StaffDashboardPage() {
       {activeTab === 'complaints' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">My complaints</CardTitle>
+            <CardTitle className="text-base">Concerns I've shared</CardTitle>
             <Button size="sm" onClick={() => setComplaintOpen(true)}>
-              Submit complaint
+              Share a concern
             </Button>
           </CardHeader>
           <CardContent>
             {loading && <Loader className="my-4" />}
             {!loading && complaints.length === 0 && (
-              <p className="text-sm text-muted-foreground">No complaints yet. Submit one if you need to report an issue.</p>
+              <p className="text-sm text-muted-foreground">No concerns shared yet. Use &quot;Share a concern&quot; to report an issue.</p>
             )}
             {!loading && complaints.length > 0 && (
               <ul className="space-y-3">
@@ -237,15 +237,15 @@ export default function StaffDashboardPage() {
       {activeTab === 'suggestions' && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-base">My suggestions</CardTitle>
+            <CardTitle className="text-base">Ideas I've shared</CardTitle>
             <Button size="sm" onClick={() => setSuggestionOpen(true)}>
-              Submit suggestion
+              Share an idea
             </Button>
           </CardHeader>
           <CardContent>
             {loading && <Loader className="my-4" />}
             {!loading && suggestions.length === 0 && (
-              <p className="text-sm text-muted-foreground">No suggestions yet. Share your ideas to help us improve.</p>
+              <p className="text-sm text-muted-foreground">No ideas shared yet. Share your ideas to help us improve.</p>
             )}
             {!loading && suggestions.length > 0 && (
               <ul className="space-y-3">
@@ -309,7 +309,7 @@ export default function StaffDashboardPage() {
       <Modal
         open={complaintOpen}
         onClose={() => setComplaintOpen(false)}
-        title="Submit complaint"
+        title="Share a concern"
         footer={
           <>
             <Button variant="outline" size="sm" onClick={() => setComplaintOpen(false)} disabled={saving}>Cancel</Button>
@@ -341,7 +341,7 @@ export default function StaffDashboardPage() {
       <Modal
         open={suggestionOpen}
         onClose={() => setSuggestionOpen(false)}
-        title="Submit suggestion"
+        title="Share an idea"
         footer={
           <>
             <Button variant="outline" size="sm" onClick={() => setSuggestionOpen(false)} disabled={saving}>Cancel</Button>

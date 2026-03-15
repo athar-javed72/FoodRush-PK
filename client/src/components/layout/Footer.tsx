@@ -60,7 +60,16 @@ export function Footer() {
           </motion.div>
         </div>
         <div className="mt-10 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} FoodRush PK.
+          © {new Date().getFullYear()} FoodRush PK. Built by{' '}
+          <a
+            href="https://nexoralabs.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline"
+          >
+            Nexora Labs
+          </a>
+          .
         </div>
       </div>
     </footer>

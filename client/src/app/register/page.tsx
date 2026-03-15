@@ -45,6 +45,7 @@ export default function RegisterPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Create your FoodRush account</CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">Powered by Nexora Labs</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

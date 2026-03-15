@@ -17,7 +17,7 @@ export function OrganizationWebSiteJsonLd() {
         name: 'FoodRush PK',
         url: siteUrl,
         logo: `${siteUrl}/foodrush-pk-logo.svg`,
-        description: 'Fresh food delivered fast across Pakistan.'
+        description: 'Fresh food delivered fast across Pakistan. Built by Nexora Labs.'
       },
       {
         '@type': 'WebSite',

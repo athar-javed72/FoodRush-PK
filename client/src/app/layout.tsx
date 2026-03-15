@@ -5,7 +5,7 @@ import { PageTransition } from '@/components/animation/PageTransition';
 
 export const metadata: Metadata = {
   title: 'FoodRush PK',
-  description: 'Food delivery platform – Fast delivery across Pakistan.',
+  description: 'Food delivery platform – Fast delivery across Pakistan. Built by Nexora Labs.',
   icons: { icon: '/foodrush-pk-logo.svg' }
 };
 
