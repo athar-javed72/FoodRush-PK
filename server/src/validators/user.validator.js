@@ -9,7 +9,29 @@ export const updateProfileSchema = Joi.object({
     phone: Joi.string()
       .pattern(pkPhonePattern)
       .message('Phone must be a valid Pakistan number (03xxxxxxxxx)')
-      .allow('', null)
+      .allow('', null),
+    avatar: Joi.string().uri().allow(null, '')
+  })
+});
+
+export const createUserSchema = Joi.object({
+  body: Joi.object({
+    name: Joi.string().min(2).max(100).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).max(128).required(),
+    role: Joi.string().valid(...Object.values(ROLES)).required()
+  })
+});
+
+export const updateUserByAdminSchema = Joi.object({
+  body: Joi.object({
+    name: Joi.string().min(2).max(100),
+    email: Joi.string().email(),
+    role: Joi.string().valid(...Object.values(ROLES)),
+    isActive: Joi.boolean(),
+    avatar: Joi.string().uri().allow(null, ''),
+    phone: Joi.string().pattern(pkPhonePattern).allow('', null),
+    newPassword: Joi.string().min(6).max(128).allow('')
   })
 });
 

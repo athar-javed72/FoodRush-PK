@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -95,14 +96,28 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleToggleActive = async (cat: Category) => {
+    try {
+      await apiClient.put(`/categories/${cat._id}`, { isActive: !(cat.isActive !== false) });
+      toast.success(cat.isActive !== false ? 'Category set inactive' : 'Category set active');
+      await fetchCategories();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to update category';
+      setError(msg);
+      toast.error(msg);
+    }
+  };
+
   const handleDelete = async (cat: Category) => {
     if (typeof window !== 'undefined' && !window.confirm(`Delete category "${cat.name}"?`)) return;
     try {
       await apiClient.delete(`/categories/${cat._id}`);
+      toast.success('Category deleted');
       await fetchCategories();
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Failed to delete category';
       setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -149,9 +164,20 @@ export default function AdminCategoriesPage() {
                     <TableCell>{cat.name}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">{cat.slug}</TableCell>
                     <TableCell>
-                      <Badge variant={cat.isActive !== false ? 'success' : 'outline'}>
-                        {cat.isActive !== false ? 'Active' : 'Hidden'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={cat.isActive !== false ? 'default' : 'outline'}>
+                          {cat.isActive !== false ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleToggleActive(cat)}
+                        >
+                          Toggle
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

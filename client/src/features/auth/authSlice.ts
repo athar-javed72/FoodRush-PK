@@ -5,9 +5,12 @@ import { apiClient } from '@/api/client';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   role: 'customer' | 'admin' | 'driver';
+  avatar?: string | null;
+  phone?: string | null;
 }
 
 interface AuthState {
@@ -63,6 +66,16 @@ const authSlice = createSlice({
         state.token = null;
       }
     },
+    setUser(state, action: PayloadAction<Partial<User> & { id?: string; _id?: string }>) {
+      if (state.user) {
+        const p = action.payload;
+        state.user = {
+          ...state.user,
+          ...p,
+          id: p.id ?? p._id ?? state.user.id
+        };
+      }
+    },
     logout(state) {
       state.user = null;
       state.token = null;
@@ -109,6 +122,6 @@ const authSlice = createSlice({
   }
 });
 
-export const { setAuthFromStorage, logout } = authSlice.actions;
+export const { setAuthFromStorage, setUser, logout } = authSlice.actions;
 export default authSlice.reducer;
 

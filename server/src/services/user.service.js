@@ -7,7 +7,74 @@ export async function getCurrentUser(userId) {
 }
 
 export async function listUsers() {
-  return User.find().select('name email role createdAt').sort({ createdAt: -1 });
+  return User.find().select('name email role avatar isActive createdAt').sort({ createdAt: -1 });
+}
+
+export async function getUserById(id) {
+  const user = await User.findById(id).select('-password');
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  return user;
+}
+
+export async function createUser(payload) {
+  const { name, email, password, role } = payload;
+  if (!Object.values(ROLES).includes(role)) {
+    const err = new Error('Invalid role');
+    err.statusCode = 400;
+    throw err;
+  }
+  const existing = await User.findOne({ email: email.toLowerCase() });
+  if (existing) {
+    const err = new Error('Email already registered');
+    err.statusCode = 400;
+    throw err;
+  }
+  const hashed = await hashPassword(password);
+  const user = await User.create({
+    name: name.trim(),
+    email: email.toLowerCase().trim(),
+    password: hashed,
+    role
+  });
+  const u = user.toObject ? user.toObject() : user;
+  delete u.password;
+  return u;
+}
+
+export async function updateUserByAdmin(userId, updates) {
+  const allowed = ['name', 'email', 'role', 'isActive', 'avatar', 'phone'];
+  const safeUpdates = {};
+  for (const key of allowed) {
+    if (updates[key] !== undefined) safeUpdates[key] = updates[key];
+  }
+  if (safeUpdates.email) safeUpdates.email = safeUpdates.email.toLowerCase().trim();
+  if (updates.newPassword && updates.newPassword.length >= 6) {
+    safeUpdates.password = await hashPassword(updates.newPassword);
+  }
+  const user = await User.findByIdAndUpdate(userId, safeUpdates, {
+    new: true,
+    runValidators: true
+  }).select('name email role avatar isActive createdAt');
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  return user;
+}
+
+export async function deleteUser(userId) {
+  const user = await User.findByIdAndDelete(userId);
+  if (!user) {
+    const err = new Error('User not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  return user;
 }
 
 export async function updateUserRole(userId, role) {

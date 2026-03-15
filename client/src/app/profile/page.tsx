@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Header } from '@/components/header';
-import { useAppSelector } from '@/app/store';
+import { useAppSelector, useAppDispatch } from '@/app/store';
+import { setUser } from '@/features/auth/authSlice';
 import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +15,7 @@ import Link from 'next/link';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
   const [profile, setProfile] = useState<any | null>(null);
   const [name, setName] = useState('');
@@ -20,6 +23,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,13 +52,45 @@ export default function ProfilePage() {
     load();
   }, [user, router]);
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image (JPEG, PNG, GIF, WebP).');
+      return;
+    }
+    try {
+      setAvatarUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      const uploadRes = await apiClient.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const url = uploadRes.data?.data?.url;
+      if (url) {
+        const res = await apiClient.put('/users/me', { avatar: url });
+        const updated = res.data.data.user;
+        setProfile(updated);
+        dispatch(setUser(updated));
+        toast.success('Profile photo updated.');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to upload photo.');
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
       setSaving(true);
       setMessage(null);
       const res = await apiClient.put('/users/me', { name, phone });
-      setProfile(res.data.data.user);
+      const updated = res.data.data.user;
+      setProfile(updated);
+      dispatch(setUser(updated));
       setMessage('Profile updated successfully.');
     } catch {
       setMessage('Failed to update profile.');
@@ -76,6 +113,39 @@ export default function ProfilePage() {
               <CardTitle>Account details</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="mb-6 flex flex-col items-start gap-3">
+                <div className="flex items-center gap-4">
+                  {profile.avatar ? (
+                    <img
+                      src={profile.avatar}
+                      alt="Profile"
+                      className="h-20 w-20 rounded-full object-cover border-2 border-border"
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-2xl font-semibold text-muted-foreground">
+                      {(profile.name || profile.email || '?').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={avatarUploading}
+                      onClick={() => avatarInputRef.current?.click()}
+                    >
+                      {avatarUploading ? 'Uploading…' : 'Change profile photo'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
               <form onSubmit={handleSubmit} className="space-y-4 text-sm">
                 {message && <p className="text-xs text-muted-foreground">{message}</p>}
                 <div className="space-y-1">

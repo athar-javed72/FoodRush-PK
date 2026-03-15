@@ -34,6 +34,9 @@ Thumbs.db
 coverage/
 .nyc_output
 
+# Uploads (server)
+server/uploads/
+
 # Misc
 *.pid
 .cache

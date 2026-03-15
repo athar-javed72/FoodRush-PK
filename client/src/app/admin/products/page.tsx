@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,6 +22,7 @@ interface Category {
 interface Product {
   _id: string;
   name: string;
+  description?: string;
   price: number;
   image?: string | null;
   category?: Category;
@@ -41,6 +43,8 @@ export default function AdminProductsPage() {
   const [categoryId, setCategoryId] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchCategories = async () => {
     try {
@@ -115,6 +119,33 @@ export default function AdminProductsPage() {
     return true;
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file (JPEG, PNG, GIF, WebP).');
+      return;
+    }
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await apiClient.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const url = res.data?.data?.url;
+      if (url) {
+        setImage(url);
+        toast.success('Image uploaded');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleSave = async () => {
     if (!validate()) return;
     try {
@@ -128,6 +159,7 @@ export default function AdminProductsPage() {
         image: image.trim() || undefined,
         isAvailable: true
       });
+      toast.success('Product created');
       await fetchProducts();
       handleClose();
     } catch (err: any) {
@@ -136,8 +168,19 @@ export default function AdminProductsPage() {
         err.response?.data?.errors?.[0]?.message ||
         'Failed to save product';
       setFormError(msg);
+      toast.error(msg);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleAvailable = async (p: Product) => {
+    try {
+      await apiClient.put(`/products/${p._id}`, { isAvailable: !(p.isAvailable !== false) });
+      toast.success(p.isAvailable !== false ? 'Product hidden' : 'Product active');
+      await fetchProducts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update');
     }
   };
 
@@ -212,9 +255,20 @@ export default function AdminProductsPage() {
                     </TableCell>
                     <TableCell>Rs. {p.price}</TableCell>
                     <TableCell>
-                      <Badge variant={p.isAvailable !== false ? 'success' : 'outline'}>
-                        {p.isAvailable !== false ? 'Active' : 'Hidden'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={p.isAvailable !== false ? 'default' : 'outline'}>
+                          {p.isAvailable !== false ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleToggleAvailable(p)}
+                        >
+                          Toggle
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -295,12 +349,35 @@ export default function AdminProductsPage() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-medium">Image URL (optional)</label>
+            <label className="text-xs font-medium">Image – URL or upload</label>
             <Input
-              placeholder="https://..."
+              placeholder="https://... or upload below"
               value={image}
               onChange={(e) => setImage(e.target.value)}
             />
+            <div className="flex items-center gap-2 pt-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {uploading ? 'Uploading…' : 'Upload from device'}
+              </Button>
+            </div>
+            {image && (
+              <div className="mt-2 relative h-20 w-20 rounded border overflow-hidden bg-muted">
+                <img src={image} alt="Preview" className="h-full w-full object-cover" />
+              </div>
+            )}
           </div>
         </div>
       </Modal>

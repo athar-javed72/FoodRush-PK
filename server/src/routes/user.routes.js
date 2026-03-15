@@ -6,12 +6,18 @@ import {
   updateProfile,
   updatePasswordController,
   getUsers,
-  updateUserRoleController
+  updateUserRoleController,
+  getUserIdController,
+  createUserController,
+  updateUserByAdminController,
+  deleteUserController
 } from '../controllers/user.controller.js';
 import {
   updateProfileSchema,
   updatePasswordSchema,
-  updateUserRoleSchema
+  updateUserRoleSchema,
+  createUserSchema,
+  updateUserByAdminSchema
 } from '../validators/user.validator.js';
 
 const router = express.Router();
@@ -21,7 +27,11 @@ router.put('/me', authMiddleware, validate(updateProfileSchema), updateProfile);
 router.put('/me/password', authMiddleware, validate(updatePasswordSchema), updatePasswordController);
 
 router.get('/', authMiddleware, adminMiddleware, getUsers);
+router.get('/:id', authMiddleware, adminMiddleware, getUserIdController);
+router.post('/', authMiddleware, adminMiddleware, validate(createUserSchema), createUserController);
 router.put('/:id/role', authMiddleware, adminMiddleware, validate(updateUserRoleSchema), updateUserRoleController);
+router.put('/:id', authMiddleware, adminMiddleware, validate(updateUserByAdminSchema), updateUserByAdminController);
+router.delete('/:id', authMiddleware, adminMiddleware, deleteUserController);
 
 export default router;
 

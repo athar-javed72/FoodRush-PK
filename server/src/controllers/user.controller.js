@@ -5,7 +5,11 @@ import {
   updateCurrentUser,
   updateUserPassword,
   listUsers,
-  updateUserRole
+  updateUserRole,
+  getUserById,
+  createUser,
+  updateUserByAdmin,
+  deleteUser
 } from '../services/user.service.js';
 
 export const getProfile = asyncHandler(async (req, res) => {
@@ -49,6 +53,39 @@ export const updateUserRoleController = asyncHandler(async (req, res) => {
   return successResponse(res, {
     message: 'User role updated successfully',
     data: { user: updated }
+  });
+});
+
+export const getUserIdController = asyncHandler(async (req, res) => {
+  const user = await getUserById(req.params.id);
+  return successResponse(res, {
+    message: 'User fetched successfully',
+    data: { user }
+  });
+});
+
+export const createUserController = asyncHandler(async (req, res) => {
+  const user = await createUser(req.body);
+  return successResponse(res, {
+    statusCode: 201,
+    message: 'User created successfully',
+    data: { user }
+  });
+});
+
+export const updateUserByAdminController = asyncHandler(async (req, res) => {
+  const updated = await updateUserByAdmin(req.params.id, req.body);
+  return successResponse(res, {
+    message: 'User updated successfully',
+    data: { user: updated }
+  });
+});
+
+export const deleteUserController = asyncHandler(async (req, res) => {
+  await deleteUser(req.params.id);
+  return successResponse(res, {
+    message: 'User deleted successfully',
+    data: {}
   });
 });
 
