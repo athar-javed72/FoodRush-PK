@@ -1,5 +1,11 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/app/store';
+import { setOrderMode } from '@/features/orderMode/orderModeSlice';
+import type { OrderMode } from '@/features/orderMode/orderModeSlice';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,8 +16,19 @@ import { TrustSection } from '@/components/home/TrustSection';
 import { PopularDishes } from '@/components/home/PopularDishes';
 import { OffersBanner } from '@/components/home/OffersBanner';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
+import { ORDER_MODE_LABELS } from '@/features/orderMode/orderModeSlice';
+
+const MODES: OrderMode[] = ['delivery', 'dine_in', 'pickup'];
 
 export default function Home() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const handleModeSelect = (mode: OrderMode) => {
+    dispatch(setOrderMode(mode));
+    router.push('/menu');
+  };
+
   return (
     <>
       <OrganizationWebSiteJsonLd />
@@ -29,15 +46,20 @@ export default function Home() {
               Fresh Food Delivered Fast Across Pakistan
             </h1>
             <p className="max-w-md text-sm text-muted-foreground md:text-base">
-              Order burgers, pizzas, biryani, and more. Delivered to your door with a smooth ordering experience.
+              Order burgers, pizzas, biryani, and more. Choose how you want to enjoy—delivery, dine-in, or pickup.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <Link href="/menu">
-                <Button size="lg">Order Now</Button>
-              </Link>
-              <Link href="/menu">
-                <Button size="lg" variant="outline">Browse Menu</Button>
-              </Link>
+            <div className="flex flex-col gap-3 sm:flex-wrap sm:flex-row sm:items-stretch sm:justify-center md:justify-start">
+              {MODES.map((mode) => (
+                <Button
+                  key={mode}
+                  size="lg"
+                  variant={mode === 'delivery' ? 'default' : 'outline'}
+                  className="min-w-[200px] sm:min-w-0"
+                  onClick={() => handleModeSelect(mode)}
+                >
+                  {ORDER_MODE_LABELS[mode]}
+                </Button>
+              ))}
             </div>
           </FadeIn>
           <FadeIn delay={0.05} className="flex justify-center">

@@ -11,6 +11,7 @@ import adminRoutes from './admin.routes.js';
 import addressRoutes from './address.routes.js';
 import couponRoutes from './coupon.routes.js';
 import driverRoutes from './driver.routes.js';
+import staffRoutes from './staff.routes.js';
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use('/admin', adminRoutes);
 router.use('/addresses', addressRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/driver', driverRoutes);
+router.use('/staff', staffRoutes);
 
 export default router;

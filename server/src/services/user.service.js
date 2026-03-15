@@ -2,12 +2,24 @@ import { User } from '../models/User.js';
 import { ROLES } from '../constants/roles.js';
 import { comparePassword, hashPassword } from '../utils/password.util.js';
 
+const EMPLOYEE_ROLES = [
+  ROLES.ADMIN,
+  ROLES.DRIVER,
+  ROLES.SERVICE_ASSOCIATE,
+  ROLES.FACILITY_ASSOCIATE,
+  ROLES.MANAGER
+];
+
 export async function getCurrentUser(userId) {
   return User.findById(userId).select('-password');
 }
 
-export async function listUsers() {
-  return User.find().select('name email role avatar isActive createdAt').sort({ createdAt: -1 });
+export async function listUsers(options = {}) {
+  const { employeesOnly } = options;
+  const query = employeesOnly ? { role: { $in: EMPLOYEE_ROLES } } : {};
+  return User.find(query)
+    .select('name email role avatar isActive createdAt department phone')
+    .sort({ createdAt: -1 });
 }
 
 export async function getUserById(id) {
@@ -46,7 +58,7 @@ export async function createUser(payload) {
 }
 
 export async function updateUserByAdmin(userId, updates) {
-  const allowed = ['name', 'email', 'role', 'isActive', 'avatar', 'phone'];
+  const allowed = ['name', 'email', 'role', 'isActive', 'avatar', 'phone', 'department'];
   const safeUpdates = {};
   for (const key of allowed) {
     if (updates[key] !== undefined) safeUpdates[key] = updates[key];
@@ -58,7 +70,7 @@ export async function updateUserByAdmin(userId, updates) {
   const user = await User.findByIdAndUpdate(userId, safeUpdates, {
     new: true,
     runValidators: true
-  }).select('name email role avatar isActive createdAt');
+  }).select('name email role avatar isActive createdAt department phone');
   if (!user) {
     const err = new Error('User not found');
     err.statusCode = 404;

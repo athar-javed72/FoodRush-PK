@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(ROLES),
       default: ROLES.CUSTOMER
     },
+    // Optional: for employees - department/location (e.g. "Floor 1", "Kitchen")
+    department: {
+      type: String,
+      default: null
+    },
     isActive: {
       type: Boolean,
       default: true

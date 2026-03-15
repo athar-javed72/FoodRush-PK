@@ -1,17 +1,51 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/header';
+import { useAppSelector } from '@/app/store';
 
-const adminLinks = [
+const adminLinksAll = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/categories', label: 'Categories' },
   { href: '/admin/products', label: 'Products' },
   { href: '/admin/orders', label: 'Orders' },
   { href: '/admin/users', label: 'Users' },
+  { href: '/admin/employees', label: 'Team' },
+  { href: '/admin/complaints', label: 'Complaints' },
+  { href: '/admin/suggestions', label: 'Suggestions' },
   { href: '/admin/coupons', label: 'Coupons' },
   { href: '/admin/analytics', label: 'Analytics' }
 ];
 
+/** Manager only sees these; admin sees all */
+const managerLinks = ['/admin', '/admin/employees', '/admin/complaints', '/admin/suggestions'];
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const user = useAppSelector((s) => s.auth.user);
+
+  const isAdmin = user?.role === 'admin';
+  const isManager = user?.role === 'manager';
+  const isAdminOrManager = isAdmin || isManager;
+  const adminLinks = isAdmin
+    ? adminLinksAll
+    : adminLinksAll.filter((link) => managerLinks.includes(link.href));
+
+  useEffect(() => {
+    if (user === null) router.replace('/login');
+    else if (user && !isAdminOrManager) router.replace('/');
+  }, [user, router, isAdminOrManager]);
+
+  if (!user || !isAdminOrManager) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading…</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />

@@ -1,6 +1,6 @@
 import { verifyToken } from '../utils/token.util.js';
 import { errorResponse } from '../utils/response.util.js';
-import { ROLES } from '../constants/roles.js';
+import { ROLES, hasPrivilege, PRIVILEGES } from '../constants/roles.js';
 
 /** Attaches user to req if valid token present; does not require auth. */
 export function optionalAuthMiddleware(req, res, next) {
@@ -69,5 +69,31 @@ export function driverMiddleware(req, res, next) {
     });
   }
   return next();
+}
+
+/**
+ * Require one of the given privileges (RBAC). Admin has all.
+ * @param {...string} privilegeCodes - PRIVILEGES values, e.g. PRIVILEGES.COMPLAINT_SUBMIT
+ */
+export function requirePrivilege(...privilegeCodes) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return errorResponse(res, {
+        statusCode: 401,
+        message: 'Unauthorized',
+        errors: [{ message: 'Authentication required' }]
+      });
+    }
+    const role = req.user.role;
+    const allowed = privilegeCodes.some((code) => hasPrivilege(role, code));
+    if (!allowed) {
+      return errorResponse(res, {
+        statusCode: 403,
+        message: 'Forbidden',
+        errors: [{ message: 'Insufficient privileges' }]
+      });
+    }
+    return next();
+  };
 }
 

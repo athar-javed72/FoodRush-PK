@@ -12,8 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import { EmptyState } from '@/components/EmptyState';
 import { apiClient } from '@/api/client';
 import { Loader } from '@/components/ui/loader';
-
-const ROLES = ['customer', 'admin', 'driver'] as const;
+import { ROLES, getRoleLabel } from '@/lib/roles';
 
 interface User {
   _id: string;
@@ -23,12 +22,6 @@ interface User {
   avatar?: string | null;
   isActive?: boolean;
   createdAt: string;
-}
-
-function roleLabel(role: string) {
-  if (role === 'admin') return 'Admin';
-  if (role === 'driver') return 'Driver';
-  return 'Customer';
 }
 
 function UserAvatar({ user }: { user: User }) {
@@ -53,7 +46,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -67,7 +59,6 @@ export default function AdminUsersPage() {
 
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState<string>('customer');
   const [editNewPassword, setEditNewPassword] = useState('');
 
   const fetchUsers = async () => {
@@ -96,28 +87,12 @@ export default function AdminUsersPage() {
       setEditingUser(u);
       setEditName(u.name);
       setEditEmail(u.email);
-      setEditRole(u.role);
       setEditNewPassword('');
       setFormError(null);
       setEditOpen(true);
       window.history.replaceState({}, '', '/admin/users');
     }
   }, [editId, users]);
-
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    try {
-      setUpdatingId(userId);
-      await apiClient.put(`/users/${userId}/role`, { role: newRole });
-      setUsers((prev) =>
-        prev.map((u) => (u._id === userId ? { ...u, role: newRole } : u))
-      );
-      toast.success('Role updated');
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to update role');
-    } finally {
-      setUpdatingId(null);
-    }
-  };
 
   const openCreate = () => {
     setCreateName('');
@@ -165,7 +140,6 @@ export default function AdminUsersPage() {
     setEditingUser(u);
     setEditName(u.name);
     setEditEmail(u.email);
-    setEditRole(u.role);
     setEditNewPassword('');
     setFormError(null);
     setEditOpen(true);
@@ -184,10 +158,9 @@ export default function AdminUsersPage() {
     }
     try {
       setSaving(true);
-      const body: { name: string; email: string; role: string; newPassword?: string } = {
+      const body: { name: string; email: string; newPassword?: string } = {
         name: editName.trim(),
-        email: editEmail.trim().toLowerCase(),
-        role: editRole
+        email: editEmail.trim().toLowerCase()
       };
       if (editNewPassword.trim().length >= 6) body.newPassword = editNewPassword.trim();
       await apiClient.put(`/users/${editingUser._id}`, body);
@@ -268,19 +241,8 @@ export default function AdminUsersPage() {
                       </Link>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">{u.email}</TableCell>
-                    <TableCell>
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                        disabled={updatingId === u._id}
-                        className="rounded border border-input bg-background px-2 py-1 text-xs"
-                      >
-                        {ROLES.map((r) => (
-                          <option key={r} value={r}>
-                            {roleLabel(r)}
-                          </option>
-                        ))}
-                      </select>
+                    <TableCell className="text-xs">
+                      {getRoleLabel(u.role)}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(u.createdAt).toLocaleDateString()}
@@ -364,7 +326,7 @@ export default function AdminUsersPage() {
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
             >
               {ROLES.map((r) => (
-                <option key={r} value={r}>{roleLabel(r)}</option>
+                <option key={r} value={r}>{getRoleLabel(r)}</option>
               ))}
             </select>
           </div>
@@ -405,17 +367,8 @@ export default function AdminUsersPage() {
               placeholder="user@example.com"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium">Role</label>
-            <select
-              value={editRole}
-              onChange={(e) => setEditRole(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>{roleLabel(r)}</option>
-              ))}
-            </select>
+          <div className="text-xs text-muted-foreground">
+            Role: {editingUser ? getRoleLabel(editingUser.role) : ''} (cannot be changed here)
           </div>
           <div className="space-y-1">
             <label className="text-xs font-medium">New password (optional, min 6)</label>

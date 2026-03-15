@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { login, setAuthFromStorage } from '@/features/auth/authSlice';
+import { getDefaultRedirectForRole } from '@/lib/roles';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +31,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      const path = returnUrl.startsWith('/') ? returnUrl : `/${returnUrl}`;
+      const path =
+        returnUrl === '/menu' || !returnUrl
+          ? getDefaultRedirectForRole(user.role)
+          : returnUrl.startsWith('/')
+            ? returnUrl
+            : `/${returnUrl}`;
       router.replace(path);
     }
   }, [user, router, returnUrl]);

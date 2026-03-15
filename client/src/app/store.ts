@@ -4,13 +4,15 @@ import authReducer from '@/features/auth/authSlice';
 import cartReducer from '@/features/cart/cartSlice';
 import wishlistReducer from '@/features/wishlist/wishlistSlice';
 import guestCartReducer from '@/features/guestCart/guestCartSlice';
+import orderModeReducer from '@/features/orderMode/orderModeSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     cart: cartReducer,
     wishlist: wishlistReducer,
-    guestCart: guestCartReducer
+    guestCart: guestCartReducer,
+    orderMode: orderModeReducer
   }
 });
 

@@ -31,6 +31,7 @@ export const updateUserByAdminSchema = Joi.object({
     isActive: Joi.boolean(),
     avatar: Joi.string().uri().allow(null, ''),
     phone: Joi.string().pattern(pkPhonePattern).allow('', null),
+    department: Joi.string().max(100).allow('', null),
     newPassword: Joi.string().min(6).max(128).allow('')
   })
 });

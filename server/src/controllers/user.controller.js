@@ -40,10 +40,19 @@ export const updatePasswordController = asyncHandler(async (req, res) => {
   });
 });
 
-export const getUsers = asyncHandler(async (_req, res) => {
-  const users = await listUsers();
+export const getUsers = asyncHandler(async (req, res) => {
+  const employeesOnly = req.query.employeesOnly === 'true';
+  const users = await listUsers({ employeesOnly });
   return successResponse(res, {
     message: 'Users fetched successfully',
+    data: { users }
+  });
+});
+
+export const getEmployees = asyncHandler(async (_req, res) => {
+  const users = await listUsers({ employeesOnly: true });
+  return successResponse(res, {
+    message: 'Team members fetched successfully',
     data: { users }
   });
 });

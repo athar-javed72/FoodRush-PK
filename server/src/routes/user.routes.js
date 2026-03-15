@@ -1,11 +1,13 @@
 import express from 'express';
-import { authMiddleware, adminMiddleware } from '../middlewares/auth.middleware.js';
+import { authMiddleware, adminMiddleware, requirePrivilege } from '../middlewares/auth.middleware.js';
+import { PRIVILEGES } from '../constants/roles.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import {
   getProfile,
   updateProfile,
   updatePasswordController,
   getUsers,
+  getEmployees,
   updateUserRoleController,
   getUserIdController,
   createUserController,
@@ -27,6 +29,7 @@ router.put('/me', authMiddleware, validate(updateProfileSchema), updateProfile);
 router.put('/me/password', authMiddleware, validate(updatePasswordSchema), updatePasswordController);
 
 router.get('/', authMiddleware, adminMiddleware, getUsers);
+router.get('/employees', authMiddleware, requirePrivilege(PRIVILEGES.EMPLOYEES_LIST), getEmployees);
 router.get('/:id', authMiddleware, adminMiddleware, getUserIdController);
 router.post('/', authMiddleware, adminMiddleware, validate(createUserSchema), createUserController);
 router.put('/:id/role', authMiddleware, adminMiddleware, validate(updateUserRoleSchema), updateUserRoleController);
