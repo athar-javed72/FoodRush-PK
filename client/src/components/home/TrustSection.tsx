@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const items = [
   { title: 'Fast Delivery', desc: 'Quick delivery to your doorstep', icon: '🚀' },
   { title: 'Secure Payments', desc: 'Safe payment options', icon: '🔒' },
-  { title: 'Fresh Ingredients', desc: 'Quality ingredients', icon: '🥗' },
+  { title: 'Fresh Ingredients', desc: 'Quality ingredients', icon: '🌱' },
   { title: '24/7 Support', desc: 'We are here when you need us', icon: '💬' }
 ];
 

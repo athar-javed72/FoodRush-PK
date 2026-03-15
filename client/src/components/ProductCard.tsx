@@ -49,17 +49,29 @@ function StarRating({ value = 0 }: { value?: number }) {
   );
 }
 
-const QTY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const MIN_QTY = 1;
+const MAX_QTY = 10;
+
+function CartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
+}
 
 export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCardProps) {
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
   const cartCount = useCartCount();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(MIN_QTY);
   const [justAdded, setJustAdded] = useState(false);
   const inWishlist = useAppSelector((s) => s.wishlist.some((i) => i._id === product._id));
   const cartLoading = useAppSelector((s) => s.cart.loading);
   const cartError = useAppSelector((s) => s.cart.error);
+
+  const safeQty = Math.max(MIN_QTY, Math.min(MAX_QTY, quantity));
+  const canAddToCart = safeQty >= MIN_QTY && !cartLoading;
 
   const wishlistPayload: WishlistItem = {
     _id: product._id,
@@ -73,7 +85,8 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const qty = Math.max(1, Math.min(10, quantity));
+    if (safeQty < MIN_QTY) return;
+    const qty = safeQty;
     if (user) {
       dispatch(addToCart({ productId: product._id, quantity: qty }))
         .unwrap()
@@ -100,6 +113,16 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
   };
 
   const addToCartLabel = cartLoading ? 'Adding…' : justAdded ? 'Added!' : 'Add to cart';
+  const decrementQty = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuantity((q) => Math.max(MIN_QTY, q - 1));
+  };
+  const incrementQty = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setQuantity((q) => Math.min(MAX_QTY, q + 1));
+  };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -113,7 +136,7 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
     return (
       <FadeIn delay={delay}>
         <Link href={`/products/${product._id}`}>
-          <Card className="flex flex-row overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+          <Card className="flex flex-row overflow-hidden rounded-xl transition-all duration-300 hover:shadow-card">
             <div className="relative h-28 w-32 shrink-0 overflow-hidden rounded-l-xl bg-muted sm:h-32 sm:w-40">
               <ProductImage src={product.image} alt={product.name} className="h-full w-full object-cover" />
             </div>
@@ -140,38 +163,50 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
                     <StarRating value={product.averageRating} />
                   )}
                 </div>
-                <div className="flex flex-col gap-1">
-                  <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-[10px] text-muted-foreground">Qty:</span>
-                    <select
-                      value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
-                      onClick={(e) => e.stopPropagation()}
-                      className="h-7 w-12 rounded border border-input bg-background px-1 text-xs"
-                    >
-                      {QTY_OPTIONS.map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="inline-flex items-center rounded-lg border border-border/80 bg-muted/50 shadow-elevated h-8 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={decrementQty}
+                        disabled={safeQty <= MIN_QTY}
+                        className="h-full w-8 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        aria-label="Decrease quantity"
+                      >
+                        ‹
+                      </button>
+                      <span className="min-w-[2rem] text-center text-xs font-semibold tabular-nums">{safeQty}</span>
+                      <button
+                        type="button"
+                        onClick={incrementQty}
+                        disabled={safeQty >= MAX_QTY}
+                        className="h-full w-8 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        aria-label="Increase quantity"
+                      >
+                        ›
+                      </button>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs border-border"
+                      className="text-xs rounded-lg border-border/80 shadow-elevated hover:shadow-card h-8"
                       onClick={handleWishlist}
                     >
-                      <span className={inWishlist ? 'text-red-500' : ''}>{inWishlist ? '♥' : '♡'}</span> {inWishlist ? 'Saved' : 'Wishlist'}
+                      <span className={inWishlist ? 'text-red-500' : 'text-muted-foreground'}>{inWishlist ? '♥' : '♡'}</span>
+                      <span className="ml-1">{inWishlist ? 'Saved' : 'Wishlist'}</span>
                     </Button>
                     <Button
                       size="sm"
-                      className="text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                      className="text-xs rounded-lg h-8 shadow-elevated hover:shadow-button transition-all duration-200 inline-flex items-center gap-1.5"
                       onClick={handleAddToCart}
-                      disabled={cartLoading}
+                      disabled={!canAddToCart}
                     >
+                      <CartIcon className="h-3.5 w-3.5" />
                       {addToCartLabel}
                     </Button>
                   </div>
                   {cartCount > 0 && (
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground rounded-md bg-muted/60 dark:bg-muted/40 px-2 py-0.5 w-fit">
                       {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
                     </p>
                   )}
@@ -189,7 +224,7 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
 
   return (
     <FadeIn delay={delay}>
-      <Card className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md">
+      <Card className="flex h-full flex-col overflow-hidden rounded-xl transition-all duration-300 hover:-translate-y-0.5">
         <Link href={`/products/${product._id}`} className="block">
           <div className="relative aspect-[4/3] overflow-hidden rounded-t-xl bg-muted">
             <ProductImage src={product.image} alt={product.name} className="h-full w-full object-cover" />
@@ -217,38 +252,50 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
               <StarRating value={product.averageRating} />
             )}
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground whitespace-nowrap">Qty</span>
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                onClick={(e) => e.stopPropagation()}
-                className="h-8 w-14 rounded-md border border-input bg-background px-2 text-xs"
-              >
-                {QTY_OPTIONS.map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+              <div className="inline-flex items-center rounded-lg border border-border/80 bg-muted/50 shadow-elevated h-8 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); decrementQty(e); }}
+                  disabled={safeQty <= MIN_QTY}
+                  className="h-full w-8 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Decrease quantity"
+                >
+                  ‹
+                </button>
+                <span className="min-w-[2rem] text-center text-xs font-semibold tabular-nums">{safeQty}</span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); incrementQty(e); }}
+                  disabled={safeQty >= MAX_QTY}
+                  className="h-full w-8 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Increase quantity"
+                >
+                  ›
+                </button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex-1 text-xs border-border"
+                className="flex-1 text-xs rounded-lg border-border/80 shadow-elevated hover:shadow-card h-8 min-w-0"
                 onClick={handleWishlist}
               >
-                <span className={inWishlist ? 'text-red-500' : ''}>{inWishlist ? '♥' : '♡'}</span> Wishlist
+                <span className={inWishlist ? 'text-red-500' : 'text-muted-foreground'}>{inWishlist ? '♥' : '♡'}</span>
+                <span className="ml-1">{inWishlist ? 'Saved' : 'Wishlist'}</span>
               </Button>
               <Button
                 size="sm"
-                className="flex-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+                className="flex-1 text-xs rounded-lg h-8 min-w-0 shadow-elevated hover:shadow-button transition-all duration-200 inline-flex items-center justify-center gap-1.5"
                 onClick={handleAddToCart}
-                disabled={cartLoading}
+                disabled={!canAddToCart}
               >
+                <CartIcon className="h-3.5 w-3.5 shrink-0" />
                 {addToCartLabel}
               </Button>
             </div>
             {cartCount > 0 && (
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[10px] text-muted-foreground rounded-md bg-muted/60 dark:bg-muted/40 px-2 py-1 w-fit">
                 {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
               </p>
             )}

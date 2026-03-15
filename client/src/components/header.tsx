@@ -162,7 +162,7 @@ export function Header() {
                 </svg>
               </button>
               {modeDropdownOpen && (
-                <div className="absolute left-0 top-full z-50 mt-2 min-w-[220px] rounded-xl border border-border/60 bg-popover/95 dark:bg-popover backdrop-blur-xl py-2 shadow-card">
+                <div className="absolute left-0 top-full z-[100] mt-2 min-w-[220px] rounded-xl border border-border bg-popover dark:bg-popover text-popover-foreground py-2 shadow-card">
                   <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Order mode
                   </p>
@@ -173,8 +173,8 @@ export function Header() {
                       onClick={() => handleSetMode(mode)}
                       className={`w-full px-3 py-2.5 text-left text-sm rounded-lg mx-1.5 transition-colors ${
                         orderMode === mode
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'hover:bg-muted/80 text-foreground'
+                          ? 'bg-accent text-accent-foreground font-medium'
+                          : 'hover:bg-accent/50 text-foreground'
                       }`}
                     >
                       {ORDER_MODE_LABELS[mode]}

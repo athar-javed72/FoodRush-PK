@@ -59,7 +59,7 @@ export function ThemeSwitcher() {
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 min-w-[140px] rounded-xl border border-border/60 bg-popover/95 dark:bg-popover backdrop-blur-xl py-2 shadow-card">
+        <div className="absolute right-0 top-full z-[100] mt-2 min-w-[140px] rounded-xl border border-border bg-popover dark:bg-popover text-popover-foreground py-2 shadow-card">
           <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Theme
           </p>
@@ -73,8 +73,8 @@ export function ThemeSwitcher() {
               }}
               className={`w-full px-3 py-2.5 text-left text-sm rounded-lg mx-1.5 transition-colors inline-flex items-center gap-2 ${
                 current === value
-                  ? 'bg-primary/10 text-primary font-medium'
-                  : 'hover:bg-muted/80 text-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
+                  : 'hover:bg-accent/50 text-foreground'
               }`}
             >
               <span aria-hidden>{icons[value]}</span>

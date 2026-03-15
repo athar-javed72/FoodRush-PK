@@ -38,8 +38,12 @@ export default function ProductDetailsPage() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const MIN_QTY = 1;
+  const MAX_QTY = 10;
+  const [quantity, setQuantity] = useState(MIN_QTY);
   const dispatch = useAppDispatch();
+  const safeQty = Math.max(MIN_QTY, Math.min(MAX_QTY, quantity));
+  const canAddToCart = safeQty >= MIN_QTY && !cartLoading;
   const user = useAppSelector((s) => s.auth.user);
   const cartItems = useAppSelector((s) => s.cart.items);
   const guestCart = useAppSelector((s) => s.guestCart);
@@ -85,8 +89,8 @@ export default function ProductDetailsPage() {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (!product) return;
-    const qty = Math.max(1, Math.min(10, quantity));
+    if (!product || safeQty < MIN_QTY) return;
+    const qty = safeQty;
     if (user) {
       dispatch(addToCart({ productId: product._id, quantity: qty }))
         .unwrap()
@@ -201,27 +205,50 @@ export default function ProductDetailsPage() {
                   {product.reviewCount != null && ` (${product.reviewCount} reviews)`}
                 </p>
               )}
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Quantity</span>
-                  <select
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className="h-9 w-20 rounded-md border border-input bg-background px-2 text-sm"
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center rounded-xl border border-border/80 bg-muted/50 dark:bg-muted/30 shadow-elevated h-10 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(MIN_QTY, q - 1))}
+                      disabled={safeQty <= MIN_QTY}
+                      className="h-full w-10 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                      aria-label="Decrease quantity"
+                    >
+                      ‹
+                    </button>
+                    <span className="min-w-[2.5rem] text-center text-sm font-semibold tabular-nums">{safeQty}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.min(MAX_QTY, q + 1))}
+                      disabled={safeQty >= MAX_QTY}
+                      className="h-full w-10 flex items-center justify-center text-foreground hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+                      aria-label="Increase quantity"
+                    >
+                      ›
+                    </button>
+                  </div>
+                  <Button
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart}
+                    className="rounded-xl shadow-elevated hover:shadow-button transition-all duration-200 px-6 inline-flex items-center gap-2"
                   >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                  <Button onClick={handleAddToCart} disabled={cartLoading}>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
                     {addToCartLabel}
                   </Button>
-                  <Button variant="outline" onClick={handleWishlist}>
-                    {inWishlist ? '♥ Saved to wishlist' : '♡ Add to wishlist'}
+                  <Button
+                    variant="outline"
+                    onClick={handleWishlist}
+                    className="rounded-xl border-border/80 shadow-elevated hover:shadow-card transition-all duration-200"
+                  >
+                    <span className={inWishlist ? 'text-red-500' : 'text-muted-foreground'}>{inWishlist ? '♥' : '♡'}</span>
+                    <span className="ml-2">{inWishlist ? 'Saved to wishlist' : 'Add to wishlist'}</span>
                   </Button>
                 </div>
                 {cartCount > 0 && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground rounded-lg bg-muted/60 dark:bg-muted/40 px-3 py-1.5 w-fit">
                     {cartCount} item{cartCount !== 1 ? 's' : ''} in cart
                   </p>
                 )}
