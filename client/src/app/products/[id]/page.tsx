@@ -2,6 +2,7 @@
 
 import { useEffect, useState, FormEvent } from 'react';
 import { useParams } from 'next/navigation';
+import { toast } from 'sonner';
 import { Header } from '@/components/header';
 import { apiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -87,7 +88,14 @@ export default function ProductDetailsPage() {
     if (!product) return;
     const qty = Math.max(1, Math.min(10, quantity));
     if (user) {
-      dispatch(addToCart({ productId: product._id, quantity: qty }));
+      dispatch(addToCart({ productId: product._id, quantity: qty }))
+        .unwrap()
+        .then(() => {
+          setJustAdded(true);
+          setTimeout(() => setJustAdded(false), 2000);
+          toast.success('Added to cart');
+        })
+        .catch((msg: string) => toast.error(msg || 'Failed to add to cart'));
     } else {
       dispatch(
         addToGuestCart({
@@ -98,9 +106,10 @@ export default function ProductDetailsPage() {
           image: product.image
         })
       );
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 2000);
+      toast.success('Added to cart');
     }
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2000);
   };
 
   const addToCartLabel = cartLoading ? 'Adding…' : justAdded ? 'Added!' : 'Add to cart';
@@ -115,7 +124,9 @@ export default function ProductDetailsPage() {
       category: product.category,
       averageRating: product.averageRating
     };
+    const willAdd = !inWishlist;
     dispatch(toggleWishlist(payload));
+    toast.success(willAdd ? 'Added to wishlist' : 'Removed from wishlist');
   };
 
   const handleSubmitReview = async (e: FormEvent) => {
@@ -130,10 +141,13 @@ export default function ProductDetailsPage() {
         comment: reviewComment.trim() || undefined
       });
       setReviewComment('');
+      toast.success('Review submitted');
       await loadReviews();
       await loadProduct();
     } catch (err: any) {
-      setReviewError(err.response?.data?.message || 'Failed to submit review');
+      const msg = err.response?.data?.message || 'Failed to submit review';
+      setReviewError(msg);
+      toast.error(msg);
     } finally {
       setReviewSubmitting(false);
     }

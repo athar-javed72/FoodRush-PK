@@ -7,8 +7,17 @@ import { Header } from '@/components/header';
 import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
-import { Loader } from '@/components/ui/loader';
+import { OrdersListSkeleton } from '@/components/ui/OrdersListSkeleton';
+import { motion } from 'framer-motion';
+
+function statusVariant(status: string): 'default' | 'secondary' | 'outline' | 'destructive' {
+  const s = (status || '').toLowerCase();
+  if (s.includes('delivered')) return 'default';
+  if (s.includes('cancel') || s.includes('failed')) return 'destructive';
+  return 'secondary';
+}
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -39,11 +48,13 @@ export default function OrdersPage() {
   return (
     <>
       <Header />
-      <main className="container py-6">
-        <h1 className="mb-4 text-2xl font-semibold">Your orders</h1>
-        {loading && <Loader className="my-6" />}
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {!loading && !orders.length && (
+      <main className="container py-8">
+        <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Your orders</h1>
+        {loading && <OrdersListSkeleton />}
+        {error && (
+          <p className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
+        {!loading && !orders.length && !error && (
           <EmptyState
             title="No orders yet"
             message="Once you place an order, you’ll see its history and status here."
@@ -52,35 +63,40 @@ export default function OrdersPage() {
           />
         )}
         {!loading && orders.length > 0 && (
-          <div className="space-y-3 text-sm">
-            {orders.map((order) => (
-              <article
+          <div className="space-y-4">
+            {orders.map((order, i) => (
+              <motion.article
                 key={order._id}
-                className="flex items-center justify-between rounded-md border bg-card p-3"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.2 }}
+                className="rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5"
               >
-                <div>
-                  <p className="font-medium">
-                    Order #{order._id.slice(-6)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleString()} • {order.items.length} items
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="mb-1 flex justify-end">
-                    <Badge variant="outline" className="text-[10px]">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="font-semibold">Order #{order._id.slice(-8).toUpperCase()}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(order.createdAt).toLocaleString()} · {(order.items || []).length} items
+                    </p>
+                    {order.items?.length > 0 && (
+                      <p className="line-clamp-1 text-xs text-muted-foreground">
+                        {order.items.map((it: any) => it.product?.name || it.name).filter(Boolean).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3 sm:justify-end sm:border-t-0 sm:pt-0">
+                    <Badge variant={statusVariant(order.orderStatus)} className="capitalize">
                       {order.orderStatus}
                     </Badge>
+                    <p className="text-lg font-semibold">Rs. {order.totalAmount}</p>
+                    <Link href={`/orders/${order._id}`} className="w-full sm:w-auto">
+                      <Button variant="default" size="sm" className="w-full sm:w-auto">
+                        View Order
+                      </Button>
+                    </Link>
                   </div>
-                  <p className="text-sm font-semibold">Rs. {order.totalAmount}</p>
-                  <Link
-                    href={`/orders/${order._id}`}
-                    className="text-xs text-primary underline underline-offset-2"
-                  >
-                    View details
-                  </Link>
                 </div>
-              </article>
+              </motion.article>
             ))}
           </div>
         )}

@@ -2,6 +2,9 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import { Header } from '@/components/header';
 import { useAppSelector } from '@/app/store';
 import { apiClient } from '@/api/client';
@@ -10,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Address {
   _id: string;
@@ -33,6 +37,11 @@ export default function CheckoutPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [couponValidateMsg, setCouponValidateMsg] = useState<string | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const step3Active = !!summary;
+  const currentStep = summary ? 3 : selectedAddressId ? 2 : 1;
+  const step1Done = currentStep >= 2;
+  const step2Done = currentStep >= 3;
 
   useEffect(() => {
     if (!user) {
@@ -82,6 +91,7 @@ export default function CheckoutPage() {
           : msg || 'Failed to prepare checkout. Please try again.';
       setError(friendly);
       setSuccess(null);
+      toast.error(friendly);
     } finally {
       setLoading(false);
     }
@@ -125,6 +135,7 @@ export default function CheckoutPage() {
         paymentMethod
       });
       setSuccess('Order placed successfully!');
+      toast.success('Order placed successfully!');
       router.replace(`/orders/${res.data.data.order._id}`);
     } catch (err: any) {
       const msg = err.response?.data?.message || '';
@@ -137,6 +148,7 @@ export default function CheckoutPage() {
           ? 'Payment failed. Please try again.'
           : msg || 'Failed to place order. Please try again.';
       setError(friendly);
+      toast.error(friendly);
     } finally {
       setLoading(false);
     }
@@ -145,20 +157,63 @@ export default function CheckoutPage() {
   return (
     <>
       <Header />
-      <main className="container py-6">
-        <h1 className="mb-4 text-2xl font-semibold">Checkout</h1>
+      <main className="container py-8">
+        <div className="mb-6">
+          <h1 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Checkout</h1>
+          <div className="flex items-center justify-between rounded-xl border border-border bg-card p-2 shadow-sm md:max-w-xl">
+            {[
+              { num: 1, label: 'Address', done: step1Done, active: currentStep === 1 },
+              { num: 2, label: 'Payment', done: step2Done, active: currentStep === 2 },
+              { num: 3, label: 'Review', done: step3Active, active: currentStep === 3 }
+            ].map((s, i) => (
+              <div key={s.num} className="flex flex-1 items-center">
+                <div
+                  className={`flex flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 transition-colors ${
+                    s.active ? 'bg-primary/10 text-primary' : s.done ? 'text-emerald-600' : 'text-muted-foreground'
+                  }`}
+                >
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                    s.done ? 'bg-emerald-500 text-white' : s.active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {s.done ? '✓' : s.num}
+                  </span>
+                  <span className="text-xs font-medium">{s.label}</span>
+                </div>
+                {i < 2 && (
+                  <div className="h-px w-4 flex-shrink-0 bg-border md:w-8" aria-hidden />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
         {loading && !summary && (
-          <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner className="h-4 w-4" />
+          <div className="mb-4 flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+            <Spinner className="h-4 w-4 shrink-0" />
             <span>Preparing your checkout…</span>
           </div>
         )}
-        {error && <p className="mb-2 text-sm text-red-500">{error}</p>}
-        {success && <p className="mb-2 text-sm text-emerald-600">{success}</p>}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {error}
+          </motion.p>
+        )}
+        {success && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400"
+          >
+            {success}
+          </motion.p>
+        )}
 
         <form onSubmit={handlePrepareCheckout} className="grid gap-6 md:grid-cols-[2fr,1fr]">
           <section className="space-y-4">
-            <Card>
+            <Card className="overflow-hidden rounded-xl border-border shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-sm">
                   <span>Step 1 · Delivery address</span>
@@ -168,16 +223,24 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                {addresses.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    You have no saved addresses. Add one in your profile, then return to checkout.
+                {addresses.length === 0 && !loading && (
+                  <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                    You have no saved addresses. <Link href="/profile" className="text-primary underline">Add one in your profile</Link>, then return to checkout.
                   </p>
+                )}
+                {loading && !addresses.length && (
+                  <div className="space-y-2">
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                    <Skeleton className="h-14 w-full rounded-lg" />
+                  </div>
                 )}
                 <div className="space-y-2">
                   {addresses.map((addr) => (
                     <label
                       key={addr._id}
-                      className="flex cursor-pointer items-center gap-3 rounded-md border bg-card px-3 py-2 text-xs transition-colors hover:border-primary/60"
+                      className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-xs transition-all hover:border-primary/50 hover:shadow-sm ${
+                        selectedAddressId === addr._id ? 'border-primary bg-primary/5' : 'border-border bg-card'
+                      }`}
                     >
                       <input
                         type="radio"
@@ -201,7 +264,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="overflow-hidden rounded-xl border-border shadow-sm">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm">Step 2 · Coupon & payment</CardTitle>
               </CardHeader>
@@ -283,7 +346,7 @@ export default function CheckoutPage() {
           </section>
 
           <aside>
-            <Card className="text-sm">
+            <Card className="sticky top-4 overflow-hidden rounded-xl border-border text-sm shadow-md">
               <CardHeader>
                 <CardTitle className="text-base">Step 3 · Order summary</CardTitle>
               </CardHeader>

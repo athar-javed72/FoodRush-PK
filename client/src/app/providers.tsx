@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from 'next-themes';
+import { Toaster } from 'sonner';
 import { store } from './store';
 import { attachInterceptors } from '@/api/client';
 import { loadWishlistFromStorage, setWishlist } from '@/features/wishlist/wishlistSlice';
@@ -21,6 +22,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <LanguageProvider>
           <CartMergeEffect />
           {children}
+          <Toaster
+            position="top-center"
+            richColors
+            closeButton
+            toastOptions={{ duration: 3000 }}
+          />
         </LanguageProvider>
       </Provider>
     </ThemeProvider>

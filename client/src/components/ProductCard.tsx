@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +75,14 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
     e.stopPropagation();
     const qty = Math.max(1, Math.min(10, quantity));
     if (user) {
-      dispatch(addToCart({ productId: product._id, quantity: qty }));
+      dispatch(addToCart({ productId: product._id, quantity: qty }))
+        .unwrap()
+        .then(() => {
+          setJustAdded(true);
+          setTimeout(() => setJustAdded(false), 2000);
+          toast.success('Added to cart');
+        })
+        .catch((msg: string) => toast.error(msg || 'Failed to add to cart'));
     } else {
       dispatch(
         addToGuestCart({
@@ -85,9 +93,10 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
           image: product.image
         })
       );
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 2000);
+      toast.success('Added to cart');
     }
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2000);
   };
 
   const addToCartLabel = cartLoading ? 'Adding…' : justAdded ? 'Added!' : 'Add to cart';
@@ -95,7 +104,9 @@ export function ProductCard({ product, delay = 0, variant = 'grid' }: ProductCar
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const willAdd = !inWishlist;
     dispatch(toggleWishlist(wishlistPayload));
+    toast.success(willAdd ? 'Added to wishlist' : 'Removed from wishlist');
   };
 
   if (variant === 'list') {

@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { apiClient } from '@/api/client';
 import { ProductImage } from '@/components/ProductImage';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/animation/FadeIn';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { addToCart } from '@/features/cart/cartSlice';
+import { addToGuestCart } from '@/features/guestCart/guestCartSlice';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Product {
@@ -22,6 +24,7 @@ export function PopularDishes() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const dispatch = useAppDispatch();
+  const user = useAppSelector((s) => s.auth.user);
   const cartLoading = useAppSelector((s) => s.cart.loading);
 
   useEffect(() => {
@@ -59,7 +62,22 @@ export function PopularDishes() {
                           <span className="text-xs text-amber-500">★ {p.averageRating.toFixed(1)}</span>
                         )}
                       </div>
-                      <Button size="sm" className="mt-2 w-full" onClick={() => dispatch(addToCart({ productId: p._id, quantity: 1 }))} disabled={cartLoading}>
+                      <Button
+                        size="sm"
+                        className="mt-2 w-full"
+                        onClick={() => {
+                          if (user) {
+                            dispatch(addToCart({ productId: p._id, quantity: 1 }))
+                              .unwrap()
+                              .then(() => toast.success('Added to cart'))
+                              .catch((msg: string) => toast.error(msg || 'Failed to add to cart'));
+                          } else {
+                            dispatch(addToGuestCart({ productId: p._id, quantity: 1, name: p.name, price: p.price, image: p.image }));
+                            toast.success('Added to cart');
+                          }
+                        }}
+                        disabled={cartLoading}
+                      >
                         Add to cart
                       </Button>
                     </div>
