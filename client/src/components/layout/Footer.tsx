@@ -12,7 +12,7 @@ const links = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-muted/30">
+    <footer className="border-t border-border/80 bg-muted/40 dark:bg-muted/20 shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_24px_-8px_rgba(0,0,0,0.3)]">
       <div className="container py-12 md:py-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <motion.div

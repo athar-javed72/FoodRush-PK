@@ -50,7 +50,7 @@ export function PopularDishes() {
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {products.map((p, i) => (
                 <FadeIn key={p._id} delay={i * 0.03}>
-                  <div className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+                  <div className="group overflow-hidden rounded-xl border border-border/80 bg-card shadow-elevated transition-all duration-300 hover:-translate-y-1 hover:shadow-card">
                     <Link href={`/products/${p._id}`} className="block aspect-[4/3] overflow-hidden bg-muted">
                       <ProductImage src={p.image} alt={p.name} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
                     </Link>

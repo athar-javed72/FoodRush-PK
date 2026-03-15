@@ -33,28 +33,31 @@ export default function Home() {
     <>
       <OrganizationWebSiteJsonLd />
       <Header />
-      <main className="flex flex-1 flex-col bg-gradient-to-b from-background to-muted/40">
-        {/* Hero */}
-        <section className="relative container flex flex-1 flex-col items-center justify-center gap-10 py-14 md:grid md:grid-cols-2 md:items-center md:py-20">
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1600&q=80&auto=format&fit=crop')] bg-cover bg-center" />
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/85 via-background/75 to-background/95" />
-          <FadeIn className="space-y-5 text-center md:text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+      <main className="flex flex-1 flex-col min-h-[calc(100vh-3.5rem)]">
+        {/* Hero – modern gradient + depth */}
+        <section className="relative container flex flex-1 flex-col items-center justify-center gap-12 py-16 md:grid md:grid-cols-2 md:items-center md:gap-16 md:py-24 overflow-hidden">
+          {/* Background */}
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1600&q=80&auto=format&fit=crop')] bg-cover bg-center scale-105" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/92 via-background/88 to-background" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(var(--primary)/0.12),transparent)]" />
+
+          <FadeIn className="space-y-6 text-center md:text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Fast, fresh, and right on time
             </p>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1]">
               Fresh Food Delivered Fast Across Pakistan
             </h1>
-            <p className="max-w-md text-sm text-muted-foreground md:text-base">
+            <p className="max-w-md text-base text-muted-foreground leading-relaxed">
               Order burgers, pizzas, biryani, and more. Choose how you want to enjoy—delivery, dine-in, or pickup.
             </p>
-            <div className="flex flex-col gap-3 sm:flex-wrap sm:flex-row sm:items-stretch sm:justify-center md:justify-start">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-center md:justify-start">
               {MODES.map((mode) => (
                 <Button
                   key={mode}
                   size="lg"
                   variant={mode === 'delivery' ? 'default' : 'outline'}
-                  className="min-w-[200px] sm:min-w-0"
+                  className={`min-w-[180px] sm:min-w-0 rounded-full px-6 transition-all duration-300 ${mode === 'delivery' ? 'shadow-button hover:shadow-glow' : 'shadow-elevated hover:shadow-card'}`}
                   onClick={() => handleModeSelect(mode)}
                 >
                   {ORDER_MODE_LABELS[mode]}
@@ -62,9 +65,10 @@ export default function Home() {
               ))}
             </div>
           </FadeIn>
-          <FadeIn delay={0.05} className="flex justify-center">
-            <Card className="w-full max-w-md border-none bg-card/80 shadow-lg backdrop-blur transition-transform duration-200 hover:-translate-y-1">
-              <CardContent className="flex flex-col items-center gap-4 py-8">
+
+          <FadeIn delay={0.08} className="flex justify-center w-full">
+            <Card className="w-full max-w-md rounded-2xl border border-border/50 bg-card/90 dark:bg-card/80 shadow-card backdrop-blur-xl transition-all duration-300 hover:shadow-card hover:-translate-y-1 hover:border-primary/20">
+              <CardContent className="flex flex-col items-center gap-5 py-10 px-6">
                 <Image
                   src="/foodrush-pk-logo.svg"
                   alt="FoodRush PK"
@@ -73,7 +77,7 @@ export default function Home() {
                   className="h-12 w-auto"
                   priority
                 />
-                <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-sm text-muted-foreground leading-relaxed">
                   Explore popular picks. Save time and enjoy your favourites at home.
                 </p>
               </CardContent>
@@ -81,10 +85,12 @@ export default function Home() {
           </FadeIn>
         </section>
 
-        <TrustSection />
-        <PopularDishes />
-        <OffersBanner />
-        <TestimonialsSection />
+        <section className="bg-gradient-to-b from-background via-muted/20 to-background">
+          <TrustSection />
+          <PopularDishes />
+          <OffersBanner />
+          <TestimonialsSection />
+        </section>
       </main>
       <Footer />
     </>

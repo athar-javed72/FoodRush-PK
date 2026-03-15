@@ -129,7 +129,7 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 dark:bg-background/85 backdrop-blur-xl shadow-elevated">
       <div className="container flex h-14 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Image
@@ -146,21 +146,24 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-4 md:flex">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-full bg-muted/50 dark:bg-muted/30 p-1 shadow-elevated border border-border/50">
             <div className="relative" ref={modeDropdownRef}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-normal"
+              <button
+                type="button"
                 onClick={() => setModeDropdownOpen((o) => !o)}
                 aria-expanded={modeDropdownOpen}
                 aria-haspopup="true"
+                className="inline-flex items-center gap-1.5 rounded-full h-8 pl-3.5 pr-3 text-xs font-medium text-foreground bg-background dark:bg-card border border-border/60 shadow-sm hover:border-primary/30 hover:shadow-card transition-all duration-200 min-w-[100px]"
               >
+                <span className="opacity-80" aria-hidden>🚚</span>
                 {ORDER_MODE_SHORT[orderMode]}
-              </Button>
+                <svg className="h-3.5 w-3.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
               {modeDropdownOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 min-w-[220px] rounded-md border bg-popover py-1 shadow-md">
-                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase text-muted-foreground">
+                <div className="absolute left-0 top-full z-50 mt-2 min-w-[220px] rounded-xl border border-border/60 bg-popover/95 dark:bg-popover backdrop-blur-xl py-2 shadow-card">
+                  <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Order mode
                   </p>
                   {ORDER_MODES.map((mode) => (
@@ -168,8 +171,10 @@ export function Header() {
                       key={mode}
                       type="button"
                       onClick={() => handleSetMode(mode)}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${
-                        orderMode === mode ? 'bg-accent font-medium' : ''
+                      className={`w-full px-3 py-2.5 text-left text-sm rounded-lg mx-1.5 transition-colors ${
+                        orderMode === mode
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'hover:bg-muted/80 text-foreground'
                       }`}
                     >
                       {ORDER_MODE_LABELS[mode]}

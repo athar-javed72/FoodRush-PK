@@ -8,7 +8,7 @@ export function OffersBanner() {
   return (
     <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="py-12 md:py-16">
       <div className="container">
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 py-10 text-primary-foreground shadow-lg md:px-12 md:py-14">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 py-10 text-primary-foreground shadow-card md:px-12 md:py-14">
           <div className="relative z-10 flex flex-col items-center text-center md:flex-row md:justify-between md:text-left">
             <div>
               <h2 className="text-2xl font-bold md:text-3xl">Get 20% Off on Your First Order</h2>
