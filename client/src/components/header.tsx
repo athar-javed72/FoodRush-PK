@@ -146,7 +146,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-4 md:flex">
-          <div className="flex items-center gap-2 rounded-full bg-muted/50 dark:bg-muted/30 p-1 shadow-elevated border border-border/50">
+          <div className="flex items-center gap-1.5 rounded-full bg-muted/50 dark:bg-muted/30 p-1.5 shadow-elevated border border-border/50">
             <div className="relative" ref={modeDropdownRef}>
               <button
                 type="button"
