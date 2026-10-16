@@ -3,6 +3,8 @@
 **FoodRush** is a full-stack food ordering web app: customers browse the menu, cart, checkout, and track orders; admins manage categories, products, orders, coupons, and analytics.  
 Main stack: **Next.js (frontend)** + **Node.js / Express / MongoDB (backend)** — REST API under `/api/v1`.
 
+**Repository:** [athar-javed72/FoodRush-PK](https://github.com/athar-javed72/FoodRush-PK)
+
 ---
 
 ## Features
@@ -10,9 +12,11 @@ Main stack: **Next.js (frontend)** + **Node.js / Express / MongoDB (backend)** �
 | Area | What’s included |
 |------|-------------------|
 | **Public** | Home, menu, product details, login, register |
-| **Customer** | Profile, addresses, cart, checkout, orders, order tracking |
+| **Customer** | Profile, addresses, cart, checkout (COD), orders, order tracking |
 | **Admin** | Dashboard, categories, products, orders, users, coupons, analytics |
 | **Backend** | JWT auth, bcrypt, Mongoose models, validation, consistent JSON responses |
+
+> **Note:** Checkout uses **cash on delivery (COD)**. Online payment (`mock_online` on the API) is demo-only — no live payment gateway yet.
 
 ---
 
@@ -46,7 +50,7 @@ The **`services/*`** folder is an older microservices setup (MySQL + Redis); see
 
 ## Prerequisites
 
-- **Node.js 18 or 20 LTS** (64-bit). Avoid Node 22+ for Next.js if you hit SWC errors.
+- **Node.js 20.9+ LTS** (64-bit). Required by Next.js 16 (`engines.node >= 20.9.0`).
 - **MongoDB** running locally (or connection string to Atlas).
 - **npm** (comes with Node).
 
@@ -57,9 +61,26 @@ The **`services/*`** folder is an older microservices setup (MySQL + Redis); see
 ### 1. Clone & install
 
 ```bash
-git clone <your-repo-url> FoodRush
+git clone https://github.com/athar-javed72/FoodRush-PK.git FoodRush
 cd FoodRush
 ```
+
+**Option A — one command (root):**
+
+```bash
+cd server && npm install && cd ..
+cd client && npm install && cd ..
+# or from root if workspaces already installed: npm install
+
+Copy-Item server\.env.example server\.env
+Copy-Item client\.env.example client\.env.local
+
+npm run dev
+```
+
+That runs **client + server** together (`dev:mern`).
+
+**Option B — two terminals**
 
 **Backend (server):**
 
@@ -67,8 +88,6 @@ cd FoodRush
 cd server
 npm install
 ```
-
-Copy env (Windows PowerShell):
 
 ```powershell
 Copy-Item .env.example .env
@@ -98,7 +117,9 @@ cd ../client
 npm install
 ```
 
-Create **`client/.env.local`**:
+```powershell
+Copy-Item .env.example .env.local
+```
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
@@ -112,7 +133,13 @@ Open **http://localhost:3000** — e.g. **http://localhost:3000/menu**.
 
 ### 2. First admin user
 
-Register a user via **`POST /api/v1/auth/register`**, then in MongoDB set that user’s `role` to `admin`, or seed an admin in Compass / a small script.
+From **`server/`**:
+
+```bash
+npm run seed:admin
+```
+
+Or register via **`POST /api/v1/auth/register`**, then in MongoDB set that user’s `role` to `admin`.
 
 ---
 
@@ -149,20 +176,20 @@ Base: **`/api/v1`**
 
 | Command | What it does |
 |---------|----------------|
+| `npm run dev` / `npm run dev:mern` | **Client + MongoDB server** (recommended) |
 | `npm run dev:client` | Next.js only |
-| `npm run dev:services` | All `services/*` (needs MySQL + Redis) |
-| `npm run dev` | Client + all microservices (heavy) |
-
-For the **MERN FoodRush** flow, run **`server`** and **`client`** in two terminals (see Quick start).
+| `npm run dev:server` | Express API only |
+| `npm run dev:legacy` | Client + all `services/*` microservices |
+| `npm run dev:services` | All `services/*` only (needs MySQL + Redis) |
 
 ---
 
 ## Optional: microservices
 
-The repo still includes **`packages/shared`** and **`services/*`** (auth, user, order, …) using **MySQL** and **Redis**. That path is separate from the **`server/`** MongoDB API.
+The repo still includes **`packages/shared`** and **`services/*`** (auth, user, order, …) using **MySQL** and **Redis**. That path is separate from the **`server/`** MongoDB API and is **demo/legacy** (e.g. auth may use stub users) — not for production.
 
 - Env: copy root **`.env.example`** → **`.env`** (`DATABASE_URL`, `REDIS_URL`).
-- Docs: **[docs/MYSQL-SETUP.md](docs/MYSQL-SETUP.md)**.
+- Docs: **[docs/MYSQL-SETUP.md](docs/MYSQL-SETUP.md)** (if present).
 - Docker: `docker-compose up -d mysql redis` then `npm run dev:services`.
 
 ---
@@ -171,7 +198,7 @@ The repo still includes **`packages/shared`** and **`services/*`** (auth, user, 
 
 | Issue | What to try |
 |-------|-------------|
-| **Failed to load SWC binary** (Next) | Use **Node 20 LTS**, delete `node_modules`, reinstall; see [Next.js SWC docs](https://nextjs.org/docs/messages/failed-loading-swc). |
+| **Failed to load SWC binary** (Next) | Use **Node 20.9+ LTS**, delete `node_modules`, reinstall; see [Next.js SWC docs](https://nextjs.org/docs/messages/failed-loading-swc). |
 | API errors in browser | Ensure **`server`** is running and **`NEXT_PUBLIC_API_URL`** matches (`http://localhost:5000/api/v1`). |
 | MongoDB connection failed | Check **`MONGODB_URI`** and that MongoDB is running. |
 
@@ -179,9 +206,7 @@ The repo still includes **`packages/shared`** and **`services/*`** (auth, user, 
 
 ## Live demo / repo
 
-Update the link below to your deployed site or GitHub repo when ready.
-
-- **Repository:** [FoodRush on GitHub](https://github.com/athar-javed72/FoodRush) *(replace if different)*
+- **Repository:** [https://github.com/athar-javed72/FoodRush-PK](https://github.com/athar-javed72/FoodRush-PK)
 
 ---
 
