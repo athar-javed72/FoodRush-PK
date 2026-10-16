@@ -1,0 +1,22 @@
+---
+description: FoodRush GSD/Ralph planning workflow — PRD, progress, STATE, plugins
+alwaysApply: true
+---
+
+# FoodRush agent workflow
+
+This repo uses the same planning style as the School ERP pack:
+
+- **Scope:** root `PRD.md` (current phase only)
+- **Log:** append-only `progress.txt` after each task
+- **Snapshot:** `.planning/STATE.md` (what exists / gaps / next)
+- **Plugins:** `.agents/plugins/` — gsd, ralph-loop, context7, serena, coderabbit, server-validation
+- **Stack rules:** `.agents/rules/mern-stack.md` and `server-validation.md`
+
+## Hard habits
+1. Work only on the current PRD tasks unless the user changes scope.
+2. Prefer `client/` + `server/` (MERN). Ignore legacy `services/*` unless asked.
+3. After each completed task: append to `progress.txt`, check off the task in `PRD.md`, update `STATE.md` when meaningful.
+4. Do not invent APIs/roles; match existing Express/Next patterns.
+5. Do not commit/push unless the user explicitly asks.
+6. Never put secrets in planning files.

@@ -1,0 +1,13 @@
+---
+description: FoodRush MERN conventions for client/ and server/
+globs: "{client,server}/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# MERN conventions
+
+- Backend validators live in `server/src/validators/`; use validate middleware on routes.
+- Keep REST under `/api/v1` and existing JSON response helpers.
+- Frontend API calls should respect `NEXT_PUBLIC_API_URL`.
+- Checkout is COD-first; do not imply a live payment gateway without a PRD.
+- Read `.agents/rules/mern-stack.md` for the full rule list.

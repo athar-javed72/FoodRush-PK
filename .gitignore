@@ -40,3 +40,6 @@ server/uploads/
 # Misc
 *.pid
 .cache
+
+# Local archives / dumps (keep planning docs tracked)
+_archive/
